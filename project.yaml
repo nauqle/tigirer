@@ -5,7 +5,7 @@ schema_version: 1
 
 framework:
   version: 1.2.0
-  last_upgraded: 2026-10-19
+  last_upgraded: 2026-10-30
 
 # NOTE: this template ships with no `modes:` block, and the six knobs below must
 # never be added to one.
@@ -25,3 +25,42 @@ framework:
 # here. `/settings --local <key>=<value>` writes there; `/settings <key>=<value>`
 # edits this file. See `.claude/docs/config-resolution.md` for the full
 # precedence order.
+
+# --- /setup-engine godot 4.7 eşdeğeri (elle uygulandı, 2026-10-30) -------------------------
+engine:
+  name: "Godot"
+  version: "4.7.2"
+  language: "GDScript"
+  # Compatibility: Android 2D hedefi. Şablonun "2D · non-web" satırı Forward+ önerir, ama o masaüstü
+  # varsayımıdır; Compatibility (OpenGL) en geniş Android cihaz desteğini verir. Değiştirmek için /settings.
+  rendering: "Compatibility"
+  physics: "Godot Physics 2D"
+
+specialists:
+  code: "godot-gdscript-specialist"
+  shader: "godot-shader-specialist"
+  ui: "godot-specialist"
+  additional: ["godot-gdextension-specialist"]
+
+naming:
+  classes: PascalCase
+  variables: snake_case
+  constants: SCREAMING_SNAKE
+  signals: past_tense
+  files: snake_case
+  scenes: snake_case
+
+commands:
+  build: "godot --headless --export-debug 'Android'"
+  test: "godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode"
+  run: "godot --path . --windowed --resolution 540x960"
+  smoke: "godot --headless --quit-after 5"
+
+platform:
+  targets: [Mobile]
+  primary_input: "Touch"
+  gamepad_support: "None"
+  touch_support: "Full"
+
+testing:
+  framework: gdunit4

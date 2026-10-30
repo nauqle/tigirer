@@ -181,3 +181,9 @@ $RECYCLE.BIN/
 local.properties
 *.iml
 captures/
+
+# === FloraLab: export_presets.cfg bilerek İZLENİYOR ===
+# Yukarıdaki genel kural onu yok sayar (içinde yayın imza parolası olabilir). Bu projede dosya
+# yalnızca kimlik bilgisi İÇERMEYEN Android debug ön ayarını taşır. Yayın imzası için parolaları
+# bu dosyaya YAZMA; Godot'un ortam değişkenlerini kullan (GODOT_ANDROID_KEYSTORE_RELEASE_PATH/_USER/_PASSWORD).
+!export_presets.cfg
