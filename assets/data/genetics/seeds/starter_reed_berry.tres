@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PlantGene" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_gene.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+uid = "starter_reed_berry"
+display_name = "Kamış Meyve"
+generation = 0
+parent_uids = PackedStringArray()
+stem_alleles = Array[StringName]([&"stem_reed", &"stem_reed"])
+leaf_alleles = Array[StringName]([&"leaf_oval", &"leaf_oval"])
+fruit_alleles = Array[StringName]([&"fruit_berry", &"fruit_berry"])
+growth_alleles = PackedFloat32Array(1, 1)
+water_alleles = PackedFloat32Array(1, 1)
+value_alleles = PackedFloat32Array(1, 1)
+hue_alleles = PackedFloat32Array(0.97, 0.97)
+mutations = Array[StringName]([])

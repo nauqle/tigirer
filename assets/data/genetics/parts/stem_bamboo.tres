@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlantPartDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_part_def.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/art/plants/stems/stem_bamboo.svg" id="2_texture"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stem_bamboo"
+layer = 0
+display_name = "Bambu Gövde"
+texture = ExtResource("2_texture")
+anchor = Vector2(64, 400)
+dominance = 1
+base_value = 0
+leaf_mounts = PackedVector2Array(0, -84, 0, -170, 0, -256)
+fruit_mount = Vector2(0, -366)

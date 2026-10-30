@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MutationDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/mutation_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"chimera"
+display_name = "Kimera"
+weight = 15
+growth_multiplier = 1
+water_multiplier = 1
+value_multiplier = 1.4
+glow_strength = 0
+glow_color = Color(0.4, 1, 0.8, 1)
+shimmer = 0
+tint_override = Color(1, 1, 1, 0)
+fruit_hue_shift = 0.5
+excludes = Array[StringName]([&"golden"])

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlantPartDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_part_def.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/art/plants/stems/stem_vine.svg" id="2_texture"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stem_vine"
+layer = 0
+display_name = "Sarmaşık Gövde"
+texture = ExtResource("2_texture")
+anchor = Vector2(64, 400)
+dominance = 3
+base_value = 0
+leaf_mounts = PackedVector2Array(-9, -51, 10, -149, -11, -249)
+fruit_mount = Vector2(0, -370)

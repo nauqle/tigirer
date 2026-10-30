@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PlantPartDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_part_def.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/art/plants/leaves/leaf_fern.svg" id="2_texture"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"leaf_fern"
+layer = 1
+display_name = "Eğrelti Yaprağı"
+texture = ExtResource("2_texture")
+anchor = Vector2(6, 50)
+dominance = 3
+base_value = 0

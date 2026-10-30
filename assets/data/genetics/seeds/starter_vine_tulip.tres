@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PlantGene" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_gene.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+uid = "starter_vine_tulip"
+display_name = "Sarmaşık Lale"
+generation = 0
+parent_uids = PackedStringArray()
+stem_alleles = Array[StringName]([&"stem_vine", &"stem_vine"])
+leaf_alleles = Array[StringName]([&"leaf_fern", &"leaf_fern"])
+fruit_alleles = Array[StringName]([&"flower_tulip", &"flower_tulip"])
+growth_alleles = PackedFloat32Array(1, 1)
+water_alleles = PackedFloat32Array(1, 1)
+value_alleles = PackedFloat32Array(1, 1)
+hue_alleles = PackedFloat32Array(0.8, 0.8)
+mutations = Array[StringName]([])

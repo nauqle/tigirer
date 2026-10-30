@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PlantGene" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_gene.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+uid = "starter_bamboo_pod"
+display_name = "Bambu Bakla"
+generation = 0
+parent_uids = PackedStringArray()
+stem_alleles = Array[StringName]([&"stem_bamboo", &"stem_bamboo"])
+leaf_alleles = Array[StringName]([&"leaf_broad", &"leaf_broad"])
+fruit_alleles = Array[StringName]([&"fruit_pod", &"fruit_pod"])
+growth_alleles = PackedFloat32Array(1, 1)
+water_alleles = PackedFloat32Array(1, 1)
+value_alleles = PackedFloat32Array(1, 1)
+hue_alleles = PackedFloat32Array(0.09, 0.09)
+mutations = Array[StringName]([])

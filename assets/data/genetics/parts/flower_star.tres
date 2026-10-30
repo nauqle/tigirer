@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PlantPartDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_part_def.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/art/plants/fruits/flower_star.svg" id="2_texture"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"flower_star"
+layer = 2
+display_name = "Yıldız Çiçek"
+texture = ExtResource("2_texture")
+anchor = Vector2(64, 64)
+dominance = 2
+base_value = 12

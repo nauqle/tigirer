@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="GeneticsRuleset" load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/genetics/genetics_ruleset.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_part_def.gd" id="2_part_script"]
+[ext_resource type="Script" path="res://src/gameplay/genetics/mutation_def.gd" id="3_mutation_script"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/stem_reed.tres" id="p00_stem_reed"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/stem_vine.tres" id="p01_stem_vine"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/stem_bamboo.tres" id="p02_stem_bamboo"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/stem_cyber.tres" id="p03_stem_cyber"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/leaf_oval.tres" id="p04_leaf_oval"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/leaf_fern.tres" id="p05_leaf_fern"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/leaf_broad.tres" id="p06_leaf_broad"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/leaf_spiky.tres" id="p07_leaf_spiky"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/leaf_circuit.tres" id="p08_leaf_circuit"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/fruit_berry.tres" id="p09_fruit_berry"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/fruit_bulb.tres" id="p10_fruit_bulb"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/flower_star.tres" id="p11_flower_star"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/flower_tulip.tres" id="p12_flower_tulip"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/fruit_pod.tres" id="p13_fruit_pod"]
+[ext_resource type="Resource" path="res://assets/data/genetics/parts/fruit_orb.tres" id="p14_fruit_orb"]
+[ext_resource type="Resource" path="res://assets/data/genetics/mutations/luminescent.tres" id="m00_luminescent"]
+[ext_resource type="Resource" path="res://assets/data/genetics/mutations/hyper_growth.tres" id="m01_hyper_growth"]
+[ext_resource type="Resource" path="res://assets/data/genetics/mutations/drought_proof.tres" id="m02_drought_proof"]
+[ext_resource type="Resource" path="res://assets/data/genetics/mutations/golden.tres" id="m03_golden"]
+[ext_resource type="Resource" path="res://assets/data/genetics/mutations/crystalline.tres" id="m04_crystalline"]
+[ext_resource type="Resource" path="res://assets/data/genetics/mutations/chimera.tres" id="m05_chimera"]
+
+[resource]
+script = ExtResource("1_script")
+mutation_chance = 0.05
+mutation_inherit_chance = 0.5
+max_mutations = 3
+quant_dominance = 0.5
+quant_drift = 0.04
+hue_drift = 0.01
+growth_range = Vector2(0.5, 2.5)
+water_range = Vector2(0.4, 2)
+value_range = Vector2(0.5, 4)
+hue_buckets = 24
+parts = Array[ExtResource("2_part_script")]([ExtResource("p00_stem_reed"), ExtResource("p01_stem_vine"), ExtResource("p02_stem_bamboo"), ExtResource("p03_stem_cyber"), ExtResource("p04_leaf_oval"), ExtResource("p05_leaf_fern"), ExtResource("p06_leaf_broad"), ExtResource("p07_leaf_spiky"), ExtResource("p08_leaf_circuit"), ExtResource("p09_fruit_berry"), ExtResource("p10_fruit_bulb"), ExtResource("p11_flower_star"), ExtResource("p12_flower_tulip"), ExtResource("p13_fruit_pod"), ExtResource("p14_fruit_orb")])
+mutations = Array[ExtResource("3_mutation_script")]([ExtResource("m00_luminescent"), ExtResource("m01_hyper_growth"), ExtResource("m02_drought_proof"), ExtResource("m03_golden"), ExtResource("m04_crystalline"), ExtResource("m05_chimera")])
