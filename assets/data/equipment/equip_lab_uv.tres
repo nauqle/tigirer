@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EquipmentDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/automation/equipment_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"equip_lab_uv"
+kind = 3
+display_name = "Laboratuvar UV Odası"
+description = "Çaprazlamada yeni mutasyon çıkma olasılığını artırır."
+cost = 400
+cost_growth = 2.0
+max_level = 3
+mutation_bonus_per_level = 0.03

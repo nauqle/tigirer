@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MarketEventDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/economy/market_event_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"berry_glut"
+headline = "Meyve bolluğu: fiyatlar düştü"
+body = "Toptancılar depoları doldurdu, salkım fiyatları düşüşte."
+scope = 1
+target_ids = Array[StringName]([&"fruit_berry"])
+price_multiplier = 0.6
+duration_seconds = 100.0
+weight = 14.0

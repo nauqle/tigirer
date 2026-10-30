@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EconomyConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/economy/economy_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+starting_credits = 120
+cross_cost = 40
+offspring_per_cross = 2
+discovery_bonus_species = 60
+discovery_bonus_variant = 12
+market_update_seconds = 15.0
+price_volatility = 0.05
+price_reversion = 0.12
+price_min = 0.5
+price_max = 2.5
+supply_impact_per_unit = 0.02
+supply_recovery_per_second = 0.002
+supply_floor = 0.4
+event_interval_min_seconds = 70.0
+event_interval_max_seconds = 140.0
+max_active_events = 2
+news_history_size = 8
+order_slots = 3
+order_interval_seconds = 40.0
+order_duration_seconds = 420.0
+order_reward_multiplier = 1.6
+reputation_per_order = 1
+reputation_per_level = 3
+reputation_reward_bonus = 0.05

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MarketEventDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/economy/market_event_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"pod_shortage"
+headline = "Bakla kıtlığı"
+body = "Tedarik zinciri aksadı, bakla fiyatları yükseliyor."
+scope = 1
+target_ids = Array[StringName]([&"fruit_pod"])
+price_multiplier = 1.5
+duration_seconds = 90.0
+weight = 12.0

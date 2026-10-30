@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="OrderTemplateDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/economy/order_template_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"order_luminous_gala"
+title = "Gala Siparişi: Parlayan Bitki"
+customers = PackedStringArray("Gece Galerisi", "Neon Gala")
+fruit_ids = Array[StringName]([])
+mutation_id = &"luminescent"
+min_unit_value = 0.0
+min_quantity = 2
+max_quantity = 3
+reward_multiplier = 2.0
+weight = 10.0
+min_reputation_level = 2

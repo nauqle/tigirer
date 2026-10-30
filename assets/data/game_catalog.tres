@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="GameCatalog" load_steps=41 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/game/game_catalog.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/gameplay/farm/floor_def.gd" id="s_floor"]
+[ext_resource type="Script" path="res://src/gameplay/automation/equipment_def.gd" id="s_equip"]
+[ext_resource type="Script" path="res://src/gameplay/economy/market_event_def.gd" id="s_event"]
+[ext_resource type="Script" path="res://src/gameplay/economy/order_template_def.gd" id="s_order"]
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_gene.gd" id="s_gene"]
+[ext_resource type="Resource" path="res://assets/data/farm/default_farm_config.tres" id="farm"]
+[ext_resource type="Resource" path="res://assets/data/economy/default_economy_config.tres" id="econ"]
+[ext_resource type="Resource" path="res://assets/data/automation/default_automation_config.tres" id="auto"]
+[ext_resource type="Resource" path="res://assets/data/genetics/default_ruleset.tres" id="rules"]
+[ext_resource type="Resource" path="res://assets/data/floors/floor_0.tres" id="floor00"]
+[ext_resource type="Resource" path="res://assets/data/floors/floor_1.tres" id="floor01"]
+[ext_resource type="Resource" path="res://assets/data/floors/floor_2.tres" id="floor02"]
+[ext_resource type="Resource" path="res://assets/data/floors/floor_3.tres" id="floor03"]
+[ext_resource type="Resource" path="res://assets/data/equipment/equip_drone.tres" id="equip00"]
+[ext_resource type="Resource" path="res://assets/data/equipment/equip_irrigation.tres" id="equip01"]
+[ext_resource type="Resource" path="res://assets/data/equipment/equip_lab_uv.tres" id="equip02"]
+[ext_resource type="Resource" path="res://assets/data/equipment/equip_uv_lamp.tres" id="equip03"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_berry_glut.tres" id="event00"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_bulb_boom.tres" id="event01"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_cyber_craze.tres" id="event02"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_food_scarcity.tres" id="event03"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_golden_week.tres" id="event04"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_luminous_fashion.tres" id="event05"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_market_crash.tres" id="event06"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_pod_shortage.tres" id="event07"]
+[ext_resource type="Resource" path="res://assets/data/economy/events/event_tulip_festival.tres" id="event08"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_bulb_deli.tres" id="order00"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_cafe_berry.tres" id="order01"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_cyber_collector.tres" id="order02"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_florist_tulip.tres" id="order03"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_golden_jeweler.tres" id="order04"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_lab_star.tres" id="order05"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_luminous_gala.tres" id="order06"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_pod_market.tres" id="order07"]
+[ext_resource type="Resource" path="res://assets/data/economy/orders/order_premium_delivery.tres" id="order08"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_reed_berry.tres" id="seed_starter_reed_berry"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_vine_tulip.tres" id="seed_starter_vine_tulip"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_bamboo_pod.tres" id="seed_starter_bamboo_pod"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_cyber_carrier.tres" id="seed_starter_cyber_carrier"]
+
+[resource]
+script = ExtResource("1_script")
+farm_config = ExtResource("farm")
+economy_config = ExtResource("econ")
+automation_config = ExtResource("auto")
+ruleset = ExtResource("rules")
+floors = Array[ExtResource("s_floor")]([ExtResource("floor00"), ExtResource("floor01"), ExtResource("floor02"), ExtResource("floor03")])
+equipment = Array[ExtResource("s_equip")]([ExtResource("equip00"), ExtResource("equip01"), ExtResource("equip02"), ExtResource("equip03")])
+market_events = Array[ExtResource("s_event")]([ExtResource("event00"), ExtResource("event01"), ExtResource("event02"), ExtResource("event03"), ExtResource("event04"), ExtResource("event05"), ExtResource("event06"), ExtResource("event07"), ExtResource("event08")])
+order_templates = Array[ExtResource("s_order")]([ExtResource("order00"), ExtResource("order01"), ExtResource("order02"), ExtResource("order03"), ExtResource("order04"), ExtResource("order05"), ExtResource("order06"), ExtResource("order07"), ExtResource("order08")])
+starter_seeds = Array[ExtResource("s_gene")]([ExtResource("seed_starter_reed_berry"), ExtResource("seed_starter_vine_tulip"), ExtResource("seed_starter_bamboo_pod"), ExtResource("seed_starter_cyber_carrier")])
+starter_seed_counts = PackedInt32Array(3, 3, 3, 1)

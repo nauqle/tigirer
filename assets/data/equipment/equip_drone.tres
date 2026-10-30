@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EquipmentDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/automation/equipment_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"equip_drone"
+kind = 2
+display_name = "Hasat Dronu"
+description = "Olgun bitkileri kendiliğinden biçer ve aynı bitkiyi yeniden diker."
+cost = 500
+cost_growth = 1.7
+max_level = 4
+mutation_bonus_per_level = 0.0

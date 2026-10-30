@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MarketEventDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/economy/market_event_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"food_scarcity"
+headline = "Gıda kıtlığı alarmı"
+body = "Şehirde her şeyin fiyatı artıyor."
+scope = 0
+target_ids = Array[StringName]([])
+price_multiplier = 1.3
+duration_seconds = 80.0
+weight = 10.0

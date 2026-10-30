@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="FarmConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/farm/farm_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+base_grow_seconds = 40.0
+sprout_threshold = 0.25
+water_drain_per_second = 0.012
+water_growth_threshold = 0.15
+water_growth_ramp = 0.1
+water_start = 1.0
+uv_growth_bonus_per_level = 0.5
+irrigation_refill_per_second = 0.25
+base_yield_units = 3
+seeds_returned_per_harvest = 1
+overgrowth_grace_seconds = 60.0
+overgrowth_loss_per_minute = 0.1
+overgrowth_min_factor = 0.5
+combo_bonus_per_step = 0.05
+combo_bonus_cap = 0.5
+day_length_seconds = 300.0
+max_speed = 5.0
+offline_max_hours = 8.0
+offline_min_report_seconds = 60.0
+offline_step_seconds = 5.0

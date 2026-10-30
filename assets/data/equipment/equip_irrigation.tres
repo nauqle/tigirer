@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EquipmentDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/automation/equipment_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"equip_irrigation"
+kind = 0
+display_name = "Otomatik Sulama"
+description = "Satırdaki bütün saksıları sürekli sulu tutar; elle sulama gerekmez."
+cost = 150
+cost_growth = 1.0
+max_level = 1
+mutation_bonus_per_level = 0.0

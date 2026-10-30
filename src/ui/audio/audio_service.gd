@@ -1,0 +1,78 @@
+class_name AudioService
+extends Node
+## Ses olayı servisi: SignalBus olaylarını dinleyip ilgili efekti çalar. Arayüz ve oyun sesi doğrudan çalmaz;
+## "bir şey oldu" der (sinyal), burası "hangi ses" kararını verir (şablon kuralı: UI sesi ses olayı sistemiyle).
+## Eşzamanlı sesler için küçük bir oynatıcı havuzu kullanır (hızlı kaydırmada üst üste biner).
+##
+## Uygular: design/game-brief.md, FAZ 2 "ASMR hasat sesleri".
+##
+## [codeblock]
+## var audio: AudioService = AudioService.new()
+## add_child(audio)               # SignalBus olaylarına kendiliğinden bağlanır
+## audio.enabled = settings.sound_on
+## [/codeblock]
+
+const POOL_SIZE: int = 8
+## Kombo başına perde artışı ve en çok kaç adım sayılacağı.
+const _COMBO_PITCH_STEP: float = 0.06
+const _COMBO_PITCH_MAX_STEPS: int = 12
+
+## Kapalıysa hiçbir ses çalmaz.
+var enabled: bool = true
+## Ana ses düzeyi (dB).
+var volume_db: float = -4.0
+
+var _players: Array[AudioStreamPlayer] = []
+var _streams: Dictionary = {}
+var _next_player: int = 0
+
+
+func _ready() -> void:
+	for i: int in POOL_SIZE:
+		var player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(player)
+		_players.append(player)
+	for id: SfxBank.Id in SfxBank.Id.values():
+		_streams[id] = SfxBank.make(id)
+	SignalBus.plant_harvested.connect(_on_plant_harvested)
+	SignalBus.plant_planted.connect(_on_plant_planted)
+	SignalBus.pot_watered.connect(_on_pot_watered)
+	SignalBus.plant_matured.connect(_on_plant_matured)
+	SignalBus.mutation_discovered.connect(_on_mutation_discovered)
+	SignalBus.ui_tapped.connect(_on_ui_tapped)
+
+
+## Bir efekti çalar. `pitch`: 1.0 = özgün perde.
+func play(id: SfxBank.Id, pitch: float = 1.0) -> void:
+	if not enabled or _players.is_empty():
+		return
+	var player: AudioStreamPlayer = _players[_next_player]
+	_next_player = (_next_player + 1) % _players.size()
+	player.stream = _streams[id] as AudioStreamWAV
+	player.pitch_scale = pitch
+	player.volume_db = volume_db
+	player.play()
+
+
+func _on_plant_harvested(result: HarvestResult) -> void:
+	play(SfxBank.Id.SNIP, 1.0 + _COMBO_PITCH_STEP * float(mini(result.combo_step, _COMBO_PITCH_MAX_STEPS)))
+
+
+func _on_plant_planted(_floor_index: int, _pot_index: int) -> void:
+	play(SfxBank.Id.PLANT)
+
+
+func _on_pot_watered(_floor_index: int, _pot_index: int) -> void:
+	play(SfxBank.Id.WATER)
+
+
+func _on_plant_matured(_floor_index: int, _pot_index: int) -> void:
+	play(SfxBank.Id.MATURE)
+
+
+func _on_mutation_discovered(_child: PlantGene, _mutation_id: StringName) -> void:
+	play(SfxBank.Id.MUTATION)
+
+
+func _on_ui_tapped() -> void:
+	play(SfxBank.Id.TAP)

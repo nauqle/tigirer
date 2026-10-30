@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EquipmentDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/automation/equipment_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"equip_uv_lamp"
+kind = 1
+display_name = "UV Büyüme Lambası"
+description = "Satırdaki bitkileri her seviyede %50 daha hızlı büyütür."
+cost = 260
+cost_growth = 1.8
+max_level = 2
+mutation_bonus_per_level = 0.0

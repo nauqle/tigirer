@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MarketEventDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/economy/market_event_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"market_crash"
+headline = "Borsa sarsıldı"
+body = "Yatırımcılar panikte, her ürün ucuza gidiyor."
+scope = 0
+target_ids = Array[StringName]([])
+price_multiplier = 0.75
+duration_seconds = 70.0
+weight = 8.0
