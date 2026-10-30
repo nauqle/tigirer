@@ -1,0 +1,119 @@
+extends Node
+## FAZ 5 geliştirici sahnesi: ana arayüzü (Main) belirli bir oyun durumunda açar. Ekran görüntüsü ve kanıt içindir;
+## oyuncuya gösterilmez. Durum yalnızca oyun KOMUTLARIYLA hazırlanır (dron, sulama, çaprazlama ...), sonra bir sekme açılır.
+##
+## Uygular: design/game-brief.md, FAZ 5 (dikey mobil arayüz, Seed-Dex, çevrimdışı kazanç): "çalıştır ve gözle" kanıtı.
+##
+## Komut satırı (godot ... -- seçenekler): --scenario=farm|market|lab|dex|upgrades|settings|offline|fresh, --seed=N,
+## --scale=0..3 (yazı boyutu), --colorblind, --reduce-motion.
+## Dev-only: kullanıcıya dönük metinler bilerek yerelleştirilmedi (src/ui kuralı bu klasörü kapsamaz).
+
+const MAIN_SCENE: PackedScene = preload("res://src/ui/main.tscn")
+const SAVE_PATH: String = "user://showcase_save.dat"
+const REED: String = "starter_reed_berry"
+const VINE: String = "starter_vine_tulip"
+const BAMBOO: String = "starter_bamboo_pod"
+const CARRIER: String = "starter_cyber_carrier"
+
+var _main: Main
+
+
+func _ready() -> void:
+	var options: Dictionary = _read_options()
+	SaveManager.new(SAVE_PATH).delete_save()
+	_main = MAIN_SCENE.instantiate() as Main
+	_main.production_mode = false
+	_main.save_path = SAVE_PATH
+	_main.rng_seed = int(options.get("seed", 5))
+	add_child(_main)
+	var settings: GameSettings = _main.session.settings
+	settings.set_text_scale_index(int(options.get("scale", 1)))
+	settings.set_colorblind(options.has("colorblind"))
+	settings.set_reduce_motion(options.has("reduce-motion"))
+	_prepare(String(options.get("scenario", "farm")))
+
+
+func _prepare(scenario: String) -> void:
+	var session: GameSession = _main.session
+	session.wallet.add_credits(4000)
+	match scenario:
+		"fresh":
+			session.wallet.spend(session.wallet.credits - 120)
+			_main.open_tab(0)
+		"farm":
+			session.buy_irrigation(0, 0)
+			session.buy_irrigation(0, 1)
+			session.buy_uv_lamp(0, 0)
+			session.plant_all(0, REED)
+			session.plant_all(0, VINE)
+			var floor_state: FloorState = session.farm.get_floor(0)
+			var growth: Array[float] = [1.0, 0.7, 0.35, 1.0, 0.15, 0.0]
+			for i: int in growth.size():
+				floor_state.pots[i].growth = growth[i]
+			floor_state.pots[2].water = 0.1
+			session.tick(0.2)
+			_main.open_tab(0)
+		"market":
+			_stock_produce(session)
+			session.market.start_event(session.catalog.market_events[0])
+			session.market.start_event(session.catalog.market_events[1])
+			session.tick(0.5)
+			_main.open_tab(2)
+		"lab":
+			session.crossbreed(REED, VINE)
+			session.crossbreed(CARRIER, CARRIER)
+			_main.open_tab(1)
+		"dex":
+			_discover_many(session)
+			_main.open_tab(3)
+		"upgrades":
+			session.unlock_floor(1)
+			session.buy_irrigation(0, 0)
+			session.buy_drone(0)
+			_main.open_tab(4)
+		"settings":
+			_main.settings_overlay().visible = true
+		"offline":
+			session.buy_irrigation(0, 0)
+			session.buy_irrigation(0, 1)
+			session.buy_drone(0)
+			session.plant_all(0, REED)
+			session.plant_all(0, VINE)
+			session.apply_offline(5400.0)
+			_main.open_tab(0)
+	await get_tree().process_frame
+
+
+## Çiftlikte birkaç bitki olgunlaştırıp hasat eder: envanterde ürün olur.
+func _stock_produce(session: GameSession) -> void:
+	for uid: String in [REED, VINE, CARRIER]:
+		session.plant_all(0, uid)
+		for pot_index: int in session.farm.get_floor(0).pots.size():
+			session.farm.get_pot(0, pot_index).growth = 1.0
+		for pot_index: int in session.farm.get_floor(0).pots.size():
+			session.harvest_pot(0, pot_index)
+	session.tick(0.6)
+
+
+## Birçok çaprazlama yaparak Seed-Dex'i çeşitlendirir.
+func _discover_many(session: GameSession) -> void:
+	session.wallet.add_credits(20000)
+	for round_index: int in 18:
+		var seeds: Array[SeedItem] = session.inventory.seeds()
+		var first: SeedItem = seeds[round_index % seeds.size()]
+		var second: SeedItem = seeds[(round_index * 7 + 3) % seeds.size()]
+		session.crossbreed(first.gene.uid, second.gene.uid)
+
+
+func _read_options() -> Dictionary:
+	var options: Dictionary = {}
+	for argument: String in OS.get_cmdline_user_args():
+		if not argument.begins_with("--"):
+			continue
+		var body: String = argument.substr(2)
+		var split: int = body.find("=")
+		if split < 0:
+			options[body] = true
+		else:
+			options[body.substr(0, split)] = body.substr(split + 1)
+	return options

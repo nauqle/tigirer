@@ -30,6 +30,8 @@ const MAX_STEP_SECONDS: float = 0.5
 var config: FarmConfig
 var ruleset: GeneticsRuleset
 var floors: Array[FloorState] = []
+## Hasat verim çarpanı (1.0 = tam); çevrimdışı simülasyon geçici olarak düşürür.
+var yield_factor: float = 1.0
 
 
 ## Kuralları ve kat durumlarını bağlar.
@@ -104,7 +106,7 @@ func harvest(floor_index: int, pot_index: int, combo_step: int = 0, replant: boo
 	result.pot_index = pot_index
 	result.gene = pot.gene
 	result.phenotype = pot.phenotype
-	result.quantity = config.base_yield_units
+	result.quantity = maxi(1, int(round(float(config.base_yield_units) * yield_factor)))
 	result.combo_step = combo_step
 	result.overgrowth_factor = GrowthModel.overgrowth_factor(pot.overgrowth_seconds, config)
 	result.unit_value = pot.phenotype.market_value * result.overgrowth_factor * (1.0 + GrowthModel.combo_bonus(combo_step, config))

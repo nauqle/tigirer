@@ -25,6 +25,8 @@ static func apply(farm: FarmService, automation_config: AutomationConfig, second
 	report.seconds_simulated = minf(report.seconds_away, limit)
 	report.capped = report.seconds_away > limit
 
+	var previous_factor: float = farm.yield_factor
+	farm.yield_factor = config.offline_yield_factor
 	var budgets: Dictionary = {}  # kat -> biriken hasat hakkı (kesirli)
 	var elapsed: float = 0.0
 	while elapsed < report.seconds_simulated:
@@ -35,6 +37,7 @@ static func apply(farm: FarmService, automation_config: AutomationConfig, second
 				_run_drones(farm, floor_state, automation_config, step, budgets, report)
 		elapsed += step
 
+	farm.yield_factor = previous_factor
 	_summarize_waiting(farm, report)
 	return report
 

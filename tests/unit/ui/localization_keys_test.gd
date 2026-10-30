@@ -33,8 +33,9 @@ func _collect_scripts(directory: String, into: Array[String]) -> void:
 
 func test_every_translation_key_used_in_code_exists_in_the_table() -> void:
 	var keys: Dictionary = _csv_keys()
+	# Bilinen önekli her çıplak anahtar dizgesi ("ERR_...", "HINT_...", tr("TAB_FARM") ...) tabloda olmalı
 	var pattern: RegEx = RegEx.new()
-	pattern.compile("\\btr\\(&?\"([A-Z][A-Z0-9_]+)\"\\)")
+	pattern.compile("\"((?:ERR|MSG|HINT|TAB|TOAST|SET|HUD|LAB|DEX|UPG|FARM|MARKET|ORDER|OFFLINE|GENE|BTN|FX|HELP)_[A-Z0-9_]+)\"")
 	var scripts: Array[String] = []
 	for root: String in SCAN_ROOTS:
 		_collect_scripts(root, scripts)
@@ -46,7 +47,9 @@ func test_every_translation_key_used_in_code_exists_in_the_table() -> void:
 			used += 1
 			var key: String = match.get_string(1)
 			assert_true(keys.has(key), "%s: çeviri anahtarı tabloda yok: %s" % [path, key])
-	assert_true(used > 0, "kodda en az bir tr() anahtarı kullanılmalı")
+	assert_true(used > 20, "kodda yeterince çeviri anahtarı kullanılmalı (%d)" % used)
+	for i: int in GameSettings.TEXT_SCALES.size():
+		assert_true(keys.has("SET_SIZE_%d" % i), "yazı boyutu basamağı %d çevirisi" % i)
 
 
 func test_no_translation_value_is_empty() -> void:

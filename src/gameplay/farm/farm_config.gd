@@ -13,7 +13,7 @@ extends Resource
 
 @export_group("Büyüme")
 ## Büyüme hızı 1.0, su yeterli, ışık 1.0 iken bir bitkinin tohumdan olgunluğa (büyüme 0 -> 1) gelme süresi (oyun saniyesi).
-@export_range(5.0, 600.0, 1.0) var base_grow_seconds: float = 40.0
+@export_range(5.0, 600.0, 1.0) var base_grow_seconds: float = 45.0
 ## Bu büyüme değerinden itibaren bitki "Filiz" evresindedir (altı "Tohum").
 @export_range(0.01, 0.99, 0.01) var sprout_threshold: float = 0.25
 
@@ -35,7 +35,7 @@ extends Resource
 
 @export_group("Hasat")
 ## Bir bitkiden tek hasatta çıkan meyve adedi.
-@export_range(1, 20) var base_yield_units: int = 3
+@export_range(1, 20) var base_yield_units: int = 2
 ## Hasatta envantere dönen tohum adedi (aynı genotip; ekimi sürdürülebilir kılar).
 @export_range(0, 5) var seeds_returned_per_harvest: int = 1
 ## Olgunlaştıktan sonra bu kadar saniye değer kaybı olmaz.
@@ -64,3 +64,5 @@ extends Resource
 @export_range(0.0, 3600.0, 1.0) var offline_min_report_seconds: float = 60.0
 ## Çevrimdışı simülasyonun adım uzunluğu (saniye): büyük = hızlı ama kaba, küçük = hassas ama yavaş.
 @export_range(1.0, 60.0, 1.0) var offline_step_seconds: float = 5.0
+## Çevrimdışı hasatların verim çarpanı (dronlar gözetimsizken daha az verimlidir; ekonomiyi şişirmez).
+@export_range(0.1, 1.0, 0.05) var offline_yield_factor: float = 0.5

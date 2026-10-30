@@ -13,7 +13,8 @@ config_version=5
 config/name="FloraLab: Cyber Harvest"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/art/icon.svg"
-run/main_scene="res://src/dev/genetics_lab.tscn"
+run/main_scene="res://src/ui/main.tscn"
+config/quit_on_go_back=false
 
 [autoload]
 

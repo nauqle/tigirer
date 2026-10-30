@@ -1,2 +1,126 @@
 keys,tr
 FX_COMBO,KOMBO ×%d
+BTN_BUY,Satın al
+BTN_CANCEL,Vazgeç
+BTN_CLOSE,Kapat
+BTN_OK,Tamam
+HUD_MENU,MENÜ
+HUD_DAY,Gün %d
+HUD_REP,İtibar %d
+HUD_NEWS_QUIET,Borsa sakin.
+TAB_FARM,Çiftlik
+TAB_LAB,Lab
+TAB_MARKET,Pazar
+TAB_DEX,Seed-Dex
+TAB_UPGRADES,Geliştir
+FARM_WATER_ALL,Hepsini Sula
+FARM_PLANT_ALL,Boşlara Ek
+FARM_LOCKED,"Bu kat kilitli.
+Geliştir sekmesinden aç."
+FARM_LOCKED_TAG,kilitli
+FARM_NO_SEEDS,Tohumun kalmadı! Laboratuvarda çaprazla ya da hasattan dönen tohumları kullan.
+HINT_PLANT,"Alttan bir tohum seç, sonra boş saksılara dokun ya da ""Boşlara Ek""e bas."
+HINT_WATER,Susuz saksıya (turuncu damla) dokunarak su ver.
+HINT_SWIPE,Olgun bitkilerin üzerinden parmağını kaydır: kombo yaparak biç!
+HINT_SELL,Hasat ettiklerini Pazar sekmesinde sat.
+HINT_WAIT,Bitkiler büyüyor. Beklerken Laboratuvar'da çaprazlama dene.
+GENE_TITLE,%s · nesil %d
+GENE_STATS,Büyüme ×%.2f · Su ×%.2f · Değer %.1f
+GENE_CARRIES,Gizli taşıyor: %s
+GENE_NO_MUTATION,Mutasyon yok · nesil %d
+GENE_MUTATIONS,★ %s · nesil %d
+LAB_TITLE,Çaprazlama Laboratuvarı
+LAB_PARENT_A,Ebeveyn A
+LAB_PARENT_B,Ebeveyn B
+LAB_NO_SEED,Tohum yok
+LAB_CHANCE,Yeni mutasyon olasılığı: %%%.0f · her çaprazlamada %d tohum
+LAB_CROSS,ÇAPRAZLA · ◆%d
+LAB_CHILDREN,Yeni tohumlar (dokun: ebeveyn yap)
+MARKET_NEWS,Borsa Haberleri
+MARKET_STOCK,Ürünlerim
+MARKET_ORDERS,VIP Siparişler
+MARKET_SELL_ALL,Hepsini Sat ◆%d
+MARKET_SELL_ONE,Sat ×1
+MARKET_SELL_STACK,Tümünü Sat ◆%d
+MARKET_EMPTY,Henüz ürünün yok. Olgun bitkileri kaydırarak biç!
+MARKET_AVG,ort. değer ◆%.1f
+MARKET_NO_ORDERS,Şu an açık sipariş yok. Yenisi birazdan gelir.
+ORDER_HAVE,Elde: %d/%d
+ORDER_DELIVER,Teslim Et
+ORDER_ANY_FRUIT,herhangi bir ürün
+ORDER_MIN_VALUE,birim ≥ ◆%d
+DEX_TITLE,Seed-Dex
+DEX_STATS,%d / %d tür keşfedildi (%%%d) · %d varyant
+DEX_MORE,… ve %d tür daha keşfedilmeyi bekliyor
+DEX_SEEN,%d kez görüldü · %d varyant · ilk keşif: gün %d
+UPG_TITLE,Geliştir
+UPG_UPGRADE,Yükselt
+UPG_UNLOCK,Katı Aç
+UPG_FLOOR_LOCKED,Bu kat kapalı. Aç ve yeni saksılar kur.
+UPG_FLOOR_NEED_PREVIOUS,Önce alttaki katı aç.
+UPG_ROW,Sıra %d
+UPG_IRRIGATION,Sulama
+UPG_UV,UV %d/%d
+UPG_DRONE,Hasat Dronu %d/%d
+UPG_LAB_STATUS,Seviye %d/%d · mutasyon bonusu +%%%.0f
+SET_TITLE,Ayarlar
+SET_SOUND_ON,Ses: AÇIK
+SET_SOUND_OFF,Ses: KAPALI
+SET_VIBRATION_ON,Titreşim: AÇIK
+SET_VIBRATION_OFF,Titreşim: KAPALI
+SET_MOTION_REDUCED,Hareketi azalt: AÇIK
+SET_MOTION_FULL,Hareketi azalt: KAPALI
+SET_COLORBLIND_ON,Renk körlüğü kipi: AÇIK
+SET_COLORBLIND_OFF,Renk körlüğü kipi: KAPALI
+SET_TEXT_SIZE,Yazı boyutu
+SET_SIZE_0,Küçük
+SET_SIZE_1,Normal
+SET_SIZE_2,Büyük
+SET_SIZE_3,Çok büyük
+SET_HELP_TITLE,Nasıl oynanır?
+HELP_TEXT,"1) Çiftlik: alttan bir tohum seç, boş saksılara dokun. Susuz saksılara dokunarak su ver.
+2) Bitkiler olgunlaşınca parmağını üzerlerinden kaydır: kombo yaptıkça daha çok kazanırsın. Geç kalırsan bitki aşırı olgunlaşır ve değer kaybeder.
+3) Pazar: ürünlerini sat, VIP siparişleri teslim et. Fiyatlar haberlere ve arza göre değişir.
+4) Laboratuvar: iki tohumu çaprazla; %5 ihtimalle nadir bir mutasyon çıkar. Yeni türler Seed-Dex'e kaydolur ve ödül verir.
+5) Geliştir: otomatik sulama, UV lambası, hasat dronu ve yeni katlar al. Dronlar sen yokken de çalışır."
+SET_SAVE_NOW,Şimdi kaydet
+SET_RESET,Yeni oyun (her şeyi sıfırla)
+SET_RESET_YES,"Evet, sıfırla"
+OFFLINE_TITLE,Hoş geldin!
+OFFLINE_AWAY,Uzakta geçen süre: %d sa %d dk
+OFFLINE_CAPPED,(En çok %d saatlik süre hesaplandı)
+OFFLINE_HARVESTS,Dronlar %d hasat yaptı: %d ürün (≈ ◆%d)
+OFFLINE_WAITING,%d bitki hasat bekliyor.
+OFFLINE_OVERGROWN,%d bitki aşırı olgunlaştı: yaklaşık ◆%d değer kaybı!
+TOAST_MUTATION,★ MUTASYON: %s ★
+TOAST_NEW_SPECIES,Yeni tür keşfedildi! +◆%d
+TOAST_NEW_VARIANT,Yeni varyant keşfedildi! +◆%d
+TOAST_COMBO,KOMBO ×%d · +◆%d
+ERR_ALREADY_UNLOCKED,Bu kat zaten açık.
+ERR_FLOOR_LOCKED,Bu kat kilitli.
+ERR_INVALID_TARGET,Geçersiz hedef.
+ERR_MAX_LEVEL,Zaten en yüksek seviyede.
+ERR_NOTHING_TO_SELL,Satacak ürün yok.
+ERR_NOTHING_TO_WATER,Suyu eksik bitki yok.
+ERR_NOT_ENOUGH_CREDITS,Yetersiz kredi: ◆%d gerekli.
+ERR_NOT_MATURE,Bu bitki henüz olgun değil.
+ERR_NO_EMPTY_POTS,Boş saksı yok.
+ERR_ORDER_NOT_READY,Sipariş için yeterli ürün yok.
+ERR_PICK_SEED,Önce alttan bir tohum seç.
+ERR_POT_OCCUPIED,Bu saksı dolu.
+ERR_PREVIOUS_FLOOR_LOCKED,Önce alttaki katı aç.
+ERR_SAVE_FAILED,Kaydedilemedi!
+ERR_SEED_MISSING,Bu tohumdan kalmadı.
+MSG_BACK_AGAIN,Çıkmak için tekrar geri tuşuna bas.
+MSG_CROSS_DONE,Çaprazlama tamam: %d yeni tohum!
+MSG_DRONE_BUILT,Hasat dronu kuruldu (%d).
+MSG_FLOOR_UNLOCKED,%s açıldı!
+MSG_IRRIGATION_BUILT,Otomatik sulama kuruldu.
+MSG_LAB_UV_BUILT,Laboratuvar UV odası seviye %d.
+MSG_ORDER_DONE,Sipariş teslim edildi: +◆%d
+MSG_PLANTED_N,%d saksıya ekildi.
+MSG_RESET_DONE,Yeni oyun başladı.
+MSG_SAVED,Kaydedildi.
+MSG_SOLD,Satıldı: +◆%d
+MSG_UV_BUILT,UV lambası seviye %d.
+MSG_WATERED_N,%d saksı sulandı.

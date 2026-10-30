@@ -40,6 +40,12 @@ func _ready() -> void:
 	SignalBus.plant_matured.connect(_on_plant_matured)
 	SignalBus.mutation_discovered.connect(_on_mutation_discovered)
 	SignalBus.ui_tapped.connect(_on_ui_tapped)
+	SignalBus.item_sold.connect(_on_item_sold)
+	SignalBus.order_completed.connect(_on_order_completed)
+	SignalBus.equipment_purchased.connect(_on_equipment_purchased)
+	SignalBus.floor_unlocked.connect(_on_floor_unlocked)
+	SignalBus.dex_discovery.connect(_on_dex_discovery)
+	SignalBus.toast_requested.connect(_on_toast_requested)
 
 
 ## Bir efekti çalar. `pitch`: 1.0 = özgün perde.
@@ -76,3 +82,29 @@ func _on_mutation_discovered(_child: PlantGene, _mutation_id: StringName) -> voi
 
 func _on_ui_tapped() -> void:
 	play(SfxBank.Id.TAP)
+
+
+func _on_item_sold(_signature: StringName, _quantity: int, _credits: int) -> void:
+	play(SfxBank.Id.COIN)
+
+
+func _on_order_completed(_order: Order) -> void:
+	play(SfxBank.Id.ORDER)
+
+
+func _on_equipment_purchased(_kind: EquipmentDef.Kind, _floor_index: int, _target: int, _level: int) -> void:
+	play(SfxBank.Id.UPGRADE)
+
+
+func _on_floor_unlocked(_floor_index: int) -> void:
+	play(SfxBank.Id.UPGRADE)
+
+
+func _on_dex_discovery(_morph_id: StringName, new_species: bool, _bonus: int) -> void:
+	play(SfxBank.Id.MUTATION if new_species else SfxBank.Id.MATURE)
+
+
+## Hata bildirimleri alçak "olmaz" sesi çıkarır.
+func _on_toast_requested(message_key: String, _args: Array) -> void:
+	if message_key.begins_with("ERR_"):
+		play(SfxBank.Id.ERROR)

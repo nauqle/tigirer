@@ -28,6 +28,7 @@ static func make_config() -> FarmConfig:
 	config.offline_max_hours = 8.0
 	config.offline_min_report_seconds = 60.0
 	config.offline_step_seconds = 5.0
+	config.offline_yield_factor = 1.0
 	return config
 
 

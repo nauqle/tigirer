@@ -76,7 +76,7 @@ func get_order(order_id: int) -> Order:
 
 ## Envanter bu siparişi karşılıyor mu?
 func can_fulfil(order: Order, inventory: InventoryService) -> bool:
-	return _eligible_count(order, inventory) >= order.quantity
+	return eligible_count(order, inventory) >= order.quantity
 
 
 ## Envanterdeki uygun ürünlerden (önce en düşük değerliler) siparişi karşılar; ödül ve itibar verir.
@@ -114,7 +114,8 @@ func _matching_stacks(order: Order, inventory: InventoryService) -> Array[Produc
 	return result
 
 
-func _eligible_count(order: Order, inventory: InventoryService) -> int:
+## Envanterdeki, siparişe uyan toplam birim sayısı (arayüz "elde n/m" göstergesi için).
+func eligible_count(order: Order, inventory: InventoryService) -> int:
 	var total: int = 0
 	for stack: ProduceStack in _matching_stacks(order, inventory):
 		total += stack.count
