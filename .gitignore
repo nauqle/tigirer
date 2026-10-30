@@ -187,3 +187,6 @@ captures/
 # yalnızca kimlik bilgisi İÇERMEYEN Android debug ön ayarını taşır. Yayın imzası için parolaları
 # bu dosyaya YAZMA; Godot'un ortam değişkenlerini kullan (GODOT_ANDROID_KEYSTORE_RELEASE_PATH/_USER/_PASSWORD).
 !export_presets.cfg
+
+# === FloraLab: tools/capture_screenshot.sh geçici override.cfg dosyası (çekim sırasında oluşur, çıkışta silinir) ===
+override.cfg

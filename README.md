@@ -1,3 +1,46 @@
+# tigirer: oyun deposu
+
+Bu depoda iki oyun ve onları geliştirmek için kurulu bir çerçeve var.
+
+| Oyun | Motor | Klasörler | Durum |
+|---|---|---|---|
+| **FloraLab: Cyber Harvest**: dikey çiftlik, bitki genetiği, otomasyon | Godot 4.7.2 (GDScript) | `src/`, `assets/`, `tests/`, `project.godot` | FAZ 1 hazır (genetik motoru + katmanlı bitki çizimi) |
+| **Son Fener**: tek parmakla savunma | Java, yerel Android | `app/`, `releases/` | Tamam (1.0), aşağıda |
+
+Çerçeve: [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) 1.2.0, Godot için yapılandırıldı (`.claude/`, `CLAUDE.md`, `project.yaml`).
+
+## FloraLab: Cyber Harvest
+
+Terk edilmiş bir gökdelenin katlarında hidroponik bir çiftlik kur; iki tohumu çaprazla, ebeveyn genlerini (büyüme hızı, su tüketimi, pazar değeri, renk) aktar, **%5 ihtimalle** nadir bir mutasyon yakala; bitkileri kaydırarak hasat et, dronlara devret, dinamik borsada sat, Seed-Dex'i doldur. Dikey (1080×1920) Android oyunu.
+
+<p>
+  <img src="production/qa/evidence/faz1-plant-instance/02-lab-mutation-adopted.png" width="240" alt="Genetik laboratuvarı: Biyolüminesan mutasyonu çıktı ve çocuk ebeveyn yapıldı">
+  <img src="production/qa/evidence/faz1-plant-instance/03-lab-growth-035.png" width="240" alt="Aynı bitkiler filiz evresinde (büyüme %35)">
+</p>
+
+| Faz | Kapsam | Durum |
+|---|---|---|
+| 1 | `PlantGene` kaynağı, Mendel çaprazlama, mutasyon, katmanlı `PlantInstance`, `SignalBus` | **Hazır, testli** |
+| 2 | Hidroponik ızgara, büyüme döngüsü, kaydırarak hasat | Planlı |
+| 3 | Borsa, siparişler, envanter | Planlı |
+| 4 | Otomasyon, hasat dronları, yeni katlar | Planlı |
+| 5 | Mobil arayüz, Seed-Dex, şifreli kayıt, çevrimdışı kazanç | Planlı |
+
+```bash
+# Genetik laboratuvarını aç (şu an ana sahne): iki tohumu çaprazla, çocuğa dokun, mutasyon bildirimini gör
+godot --path . --windowed --resolution 540x960
+
+bash tools/run_tests.sh                                   # tüm testler
+bash tools/capture_screenshot.sh res://src/dev/genetics_lab.tscn out.png -- --seed=3 --cross=1   # gerçek çizimle 1080x1920 ekran görüntüsü
+godot --headless --export-debug "Android" build/floralab-debug.apk   # Android APK (önce: bash tools/setup-godot-android.sh)
+```
+
+- Mimari, klasör şeması, Autoload listesi, genetik kuralları ve formüller: **[docs/architecture/floralab-architecture.md](docs/architecture/floralab-architecture.md)**
+- Tasarım kaydı: [design/game-brief.md](design/game-brief.md) · Kanıt ekran görüntüleri: [production/qa/evidence/faz1-plant-instance/](production/qa/evidence/faz1-plant-instance/README.md)
+- Test altyapısı ve gdUnit4 durumu: [tests/README.md](tests/README.md)
+
+---
+
 # Son Fener
 
 Tek parmakla oynanan, Türkçe, dikey ekranlı bir Android savunma oyunu.
@@ -66,7 +109,7 @@ app/src/main/java/com/tigirer/sonfener/
   Sfx.java     Çalışma anında üretilen ses efektleri
 app/src/test/  Birim, denge ve ekran testleri
 docs/          Tasarım belgesi, Godot ortamı ve ekran görüntüleri
-tools/         Geliştirme ortamı kurulum betiği (Godot + Android)
+tools/         Geliştirme ortamı kurulumu (Godot + Android), test koşucusu, ekran görüntüsü aracı
 releases/      Derlenmiş APK
 ```
 
