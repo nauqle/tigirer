@@ -52,6 +52,10 @@ echo "sdk.dir=/Android/SDK/yolu" > local.properties   # ya da ANDROID_HOME ayarl
 - **Denge testleri**, bilgisayarın oynadığı bir bot'la geceleri yüzlerce kez oynar ve zorluk eğrisinin bozulmadığını doğrular.
 - **Ekran testleri** (Robolectric, gerçek `Canvas`): her ekranı çizer, menüden ilk geceye uzanan akışı ve kazanma/kaybetme sonuçlarını dener; ekran görüntülerini `app/build/shots/` altına yazar. İlk çalıştırmada Robolectric, Android 14 paketini Maven'dan indirir.
 
+## Sonraki oyunlar: Godot ortamı
+
+Bulut oturumlarında Godot 4.7.2 + Android araç zinciri tek komutla kurulur: `bash tools/setup-godot-android.sh`. Neyin denendiği ve neyin denenmediği, APK/ekran görüntüsü/dokunma testi tarifleriyle birlikte: **[docs/GODOT_ORTAMI.md](docs/GODOT_ORTAMI.md)**
+
 ## Proje yapısı
 
 ```
@@ -61,7 +65,8 @@ app/src/main/java/com/tigirer/sonfener/
   Gfx.java     Çizim yardımcıları (arka plan, fener, ışın, gölgeler)
   Sfx.java     Çalışma anında üretilen ses efektleri
 app/src/test/  Birim, denge ve ekran testleri
-docs/          Tasarım belgesi ve ekran görüntüleri
+docs/          Tasarım belgesi, Godot ortamı ve ekran görüntüleri
+tools/         Geliştirme ortamı kurulum betiği (Godot + Android)
 releases/      Derlenmiş APK
 ```
 
