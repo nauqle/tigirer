@@ -1,0 +1,20 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/dev/genetics_lab.gd" id="1_script"]
+[ext_resource type="Resource" path="res://assets/data/genetics/default_ruleset.tres" id="2_ruleset"]
+[ext_resource type="Script" path="res://src/gameplay/genetics/plant_gene.gd" id="3_gene_script"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_reed_berry.tres" id="4_reed"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_vine_tulip.tres" id="5_vine"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_bamboo_pod.tres" id="6_bamboo"]
+[ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_cyber_carrier.tres" id="7_cyber"]
+
+[node name="GeneticsLab" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+ruleset = ExtResource("2_ruleset")
+starter_seeds = Array[ExtResource("3_gene_script")]([ExtResource("4_reed"), ExtResource("5_vine"), ExtResource("6_bamboo"), ExtResource("7_cyber")])

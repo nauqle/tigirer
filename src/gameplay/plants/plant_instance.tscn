@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/plants/plant_instance.gd" id="1_script"]
+[ext_resource type="Resource" path="res://assets/data/genetics/default_ruleset.tres" id="2_ruleset"]
+
+[node name="PlantInstance" type="Node2D"]
+script = ExtResource("1_script")
+ruleset = ExtResource("2_ruleset")
+
+[node name="Halo" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="Rig" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Stem" type="Sprite2D" parent="Rig"]
+unique_name_in_owner = true
+centered = false
+
+[node name="Leaves" type="Node2D" parent="Rig"]
+unique_name_in_owner = true
+
+[node name="Fruit" type="Sprite2D" parent="Rig"]
+unique_name_in_owner = true
+visible = false
+centered = false

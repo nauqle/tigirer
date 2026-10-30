@@ -13,7 +13,15 @@ config_version=5
 config/name="FloraLab: Cyber Harvest"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/art/icon.svg"
-; run/main_scene is set once the first scene exists (FAZ 1: genetics lab).
+run/main_scene="res://src/dev/genetics_lab.tscn"
+
+[autoload]
+
+SignalBus="*res://src/gameplay/events/signal_bus.gd"
+
+[debug]
+
+gdscript/warnings/untyped_declaration=2
 
 [display]
 
