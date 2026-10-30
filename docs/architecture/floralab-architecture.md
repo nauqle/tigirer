@@ -23,7 +23,7 @@
 ```text
 res://
 ├── project.godot                         ✔ 1080×1920, canvas_items + keep_width, Compatibility, 1 Autoload
-├── export_presets.cfg                    ✔ Android (arm64-v8a, hata ayıklama imzalı; sırsız)
+├── export_presets.cfg                    ✔ Android (arm64-v8a, hata ayıklama imzalı; kimlik bilgisi içermez)
 │
 ├── src/                                  KOD KÖKÜ
 │   ├── core/                             Oyunu bilmeyen genel yardımcılar (oyun koduna bağımlı OLAMAZ)
@@ -42,7 +42,7 @@ res://
 │   │   ├── plants/
 │   │   │   ├── plant_instance.gd         ✔ class_name PlantInstance : Node2D (katmanlı çizim)
 │   │   │   └── plant_instance.tscn       ✔
-│   │   ├── farm/                         ○ FAZ 2: grid, saksı, TimeManager, büyüme evresi, kaydırarak hasat
+│   │   ├── farm/                         ○ FAZ 2: grid (TileMapLayer), saksı, TimeManager, büyüme evresi, kaydırarak hasat
 │   │   ├── economy/                      ○ FAZ 3: borsa, haber olayları, envanter, VIP sözleşmeleri
 │   │   ├── automation/                   ○ FAZ 4: sulama/ışık matrisi, dron durum makinesi, kat açma
 │   │   └── save/                         ○ FAZ 5: SaveManager, Seed-Dex verisi, çevrimdışı kazanç
@@ -280,6 +280,7 @@ Arayüz kodla kurulur (geliştirici aracı; oyuncuya dönük arayüz FAZ 5'te `s
 - İstatistiksel testler tohumlu RNG ile deterministiktir. Testlerin gerçekten bir şey yakaladığı **mutasyon testiyle**
   (kodu bilerek bozup testin kırıldığını görerek) doğrulandı.
 - Görsel kanıt: `production/qa/evidence/faz1-plant-instance/` (1080×1920, `--write-movie` ile gerçek çizim).
+  Yeniden üretmek için: `bash tools/capture_screenshot.sh <sahne.tscn> <çıkış.png> -- <sahne seçenekleri>`.
 - Ayrıştırma denetimi: şablonun `godot-parse-check.gd` betiği. Android: `godot --headless --export-debug "Android"`.
 
 ## 9. Kararlar ve sapmalar
