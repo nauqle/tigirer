@@ -30,6 +30,10 @@ var _goal_title: Label
 var _goal_count: Label
 var _goal_bar: ProgressBar
 var _float_layer: Control
+var _gain_label: Label
+var _gain_tween: Tween
+var _gain_total: int = 0
+var _gain_origin: Vector2 = Vector2.ZERO
 var _last_credits: int = -1
 var _colorblind: bool = false
 
@@ -150,21 +154,42 @@ func _on_credits_changed(credits: int) -> void:
 
 ## Yüzen "+N" etiketlerini hemen kaldırır.
 func clear_floats() -> void:
+	if _gain_tween != null and _gain_tween.is_valid():
+		_gain_tween.kill()
+	_gain_label = null
 	UiKit.clear(_float_layer)
 
 
-## "+N" yükselip kaybolur.
+## "+N" yükselip kaybolur. Etiket hâlâ görünürken yeni kazanç gelirse yeni etiket açılmaz: tutar mevcut etikete eklenir ve
+## etiket yeniden başlar (üst üste binen iki etiket okunmaz olurdu).
 func _spawn_gain(amount: int) -> void:
 	if UiMotion.reduce_motion or not is_inside_tree() or amount < 1:
 		return
-	var gain: Label = UiKit.label("+%s" % UiFormat.number(amount), &"GoldLabel")
-	_float_layer.add_child(gain)
-	gain.global_position = _credits.global_position + Vector2(_credits.final_width() + 14.0, 4.0)
-	var tween: Tween = gain.create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(gain, "position:y", gain.position.y - 26.0, UiTokens.DUR_SLOW * 2.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(gain, "modulate:a", 0.0, UiTokens.DUR_SLOW * 2.0).set_delay(UiTokens.DUR_SLOW)
-	tween.chain().tween_callback(gain.queue_free)
+	if _gain_label != null and is_instance_valid(_gain_label) and _gain_label.is_inside_tree():
+		_gain_total += amount
+		_gain_label.text = "+%s" % UiFormat.number(_gain_total)
+		_gain_label.position = _gain_origin
+		_gain_label.modulate.a = 1.0
+		_gain_tween.kill()
+		UiMotion.bump(_gain_label)
+	else:
+		_gain_total = amount
+		_gain_label = UiKit.label("+%s" % UiFormat.number(amount), &"GoldLabel")
+		_float_layer.add_child(_gain_label)
+		_gain_label.global_position = _credits.global_position + Vector2(_credits.final_width() + 14.0, 4.0)
+		_gain_origin = _gain_label.position
+	var gain: Label = _gain_label
+	_gain_tween = gain.create_tween()
+	_gain_tween.set_parallel(true)
+	_gain_tween.tween_property(gain, "position:y", _gain_origin.y - 26.0, UiTokens.DUR_SLOW * 2.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_gain_tween.tween_property(gain, "modulate:a", 0.0, UiTokens.DUR_SLOW * 2.0).set_delay(UiTokens.DUR_SLOW)
+	_gain_tween.chain().tween_callback(_finish_gain.bind(gain))
+
+
+func _finish_gain(gain: Label) -> void:
+	if gain == _gain_label:
+		_gain_label = null
+	gain.queue_free()
 
 
 func _on_reputation_changed(reputation: int) -> void:

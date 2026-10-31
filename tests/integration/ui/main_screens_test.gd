@@ -249,6 +249,21 @@ func _floating_gains() -> int:
 	return count
 
 
+func test_gains_arriving_together_merge_into_one_floating_total() -> void:
+	await _frames()
+
+	_session.wallet.add_credits(300)
+	_session.wallet.add_credits(45)
+	await _frames()
+
+	assert_eq(_floating_gains(), 1, "üst üste binen iki yüzen etiket yerine tek etiket")
+	var texts: Array[String] = []
+	for node: Node in _main.hud().find_children("*", "Label", true, false):
+		if (node as Label).text.begins_with("+"):
+			texts.append((node as Label).text)
+	assert_eq(texts, ["+%s" % UiFormat.number(345)] as Array[String], "tutarlar toplandı")
+
+
 func test_clearing_removes_every_toast_and_floating_gain() -> void:
 	await _frames()
 	_main.toasts().show_text("Merhaba", ToastLayer.Kind.GOOD)
