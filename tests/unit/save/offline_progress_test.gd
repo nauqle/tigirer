@@ -157,3 +157,58 @@ func test_a_locked_floor_does_nothing_offline() -> void:
 
 	assert_eq(report.harvests, 0)
 	assert_eq(report.waiting_mature, 0, "kilitli kat sayılmaz")
+
+
+func test_the_capped_flag_is_set_just_past_the_limit_and_not_at_it() -> void:
+	var limit: float = _farm.config.offline_max_hours * 3600.0
+
+	var past: OfflineReport = OfflineProgress.apply(_farm, _automation, limit + 1.0)
+	var exact: OfflineReport = OfflineProgress.apply(_farm, _automation, limit)
+
+	assert_true(past.capped, "sınırı 1 sn aşınca kırpıldı")
+	assert_almost_eq(past.seconds_simulated, limit, EPSILON)
+	assert_false(exact.capped, "tam sınırda kırpma yok")
+
+
+func test_a_negative_gap_is_treated_as_no_time_at_all() -> void:
+	_irrigate_all()
+	_plant(0)
+
+	var report: OfflineReport = OfflineProgress.apply(_farm, _automation, -500.0)
+
+	assert_almost_eq(report.seconds_away, 0.0, EPSILON)
+	assert_almost_eq(report.seconds_simulated, 0.0, EPSILON)
+	assert_almost_eq(_farm.get_pot(0, 0).growth, 0.0, EPSILON, "saat geri alınınca bitki büyümez")
+
+
+func test_a_gap_that_is_not_a_multiple_of_the_step_simulates_exactly_that_long() -> void:
+	_irrigate_all()
+	_plant(0)
+	var reference: FarmService = FarmFixtures.make_farm(3, 3)
+	for row: int in 3:
+		reference.get_floor(0).irrigation_rows[row] = true
+	reference.plant(0, 0, FarmFixtures.make_gene(GeneticsFixtures.FRUIT_A, "g-0"))
+	var gap: float = _farm.config.offline_step_seconds + 2.0  # bir tam adım + 2 sn'lik kısa son adım
+	reference.tick_with_step(gap, gap)
+
+	var report: OfflineReport = OfflineProgress.apply(_farm, _automation, gap)
+
+	assert_almost_eq(report.seconds_simulated, gap, EPSILON)
+	assert_almost_eq(_farm.get_pot(0, 0).growth, reference.get_pot(0, 0).growth, 0.0005, "son adım kısaltıldı, fazladan süre işlenmedi")
+
+
+func test_a_drone_cuts_the_plant_that_has_waited_longest_first() -> void:
+	_irrigate_all()
+	_farm.get_floor(0).drones = 1
+	for pot_index: int in 9:
+		_plant(pot_index)
+		_farm.get_pot(0, pot_index).growth = 1.0
+	_farm.get_pot(0, 5).overgrowth_seconds = 500.0
+	_farm.get_pot(0, 2).overgrowth_seconds = 200.0
+
+	var report: OfflineReport = OfflineProgress.apply(_farm, _automation, _automation.offline_drone_cycle_seconds)  # tek hasat hakkı
+
+	assert_eq(report.harvests, 1)
+	assert_false(_farm.get_pot(0, 5).is_mature(), "en uzun bekleyen kesilip yeniden dikildi")
+	assert_true(_farm.get_pot(0, 2).is_mature(), "daha az bekleyen sırada")
+	assert_true(_farm.get_pot(0, 0).is_mature())

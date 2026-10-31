@@ -4,7 +4,7 @@ Bu depoda iki oyun ve onları geliştirmek için kurulu bir çerçeve var.
 
 | Oyun | Motor | Klasörler | Durum |
 |---|---|---|---|
-| **FloraLab: Cyber Harvest**: dikey çiftlik, bitki genetiği, otomasyon | Godot 4.7.2 (GDScript) | `src/`, `assets/`, `tests/`, `project.godot` | FAZ 1 hazır (genetik motoru + katmanlı bitki çizimi) |
+| **FloraLab: Cyber Harvest**: dikey çiftlik, bitki genetiği, otomasyon | Godot 4.7.2 (GDScript) | `src/`, `assets/`, `tests/`, `project.godot` | FAZ 1–5 hazır, release APK 1.0.0 dışa aktarıldı |
 | **Son Fener**: tek parmakla savunma | Java, yerel Android | `app/`, `releases/` | Tamam (1.0), aşağıda |
 
 Çerçeve: [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) 1.2.0, Godot için yapılandırıldı (`.claude/`, `CLAUDE.md`, `project.yaml`).
@@ -14,29 +14,39 @@ Bu depoda iki oyun ve onları geliştirmek için kurulu bir çerçeve var.
 Terk edilmiş bir gökdelenin katlarında hidroponik bir çiftlik kur; iki tohumu çaprazla, ebeveyn genlerini (büyüme hızı, su tüketimi, pazar değeri, renk) aktar, **%5 ihtimalle** nadir bir mutasyon yakala; bitkileri kaydırarak hasat et, dronlara devret, dinamik borsada sat, Seed-Dex'i doldur. Dikey (1080×1920) Android oyunu.
 
 <p>
-  <img src="production/qa/evidence/faz1-plant-instance/02-lab-mutation-adopted.png" width="240" alt="Genetik laboratuvarı: Biyolüminesan mutasyonu çıktı ve çocuk ebeveyn yapıldı">
-  <img src="production/qa/evidence/faz1-plant-instance/03-lab-growth-035.png" width="240" alt="Aynı bitkiler filiz evresinde (büyüme %35)">
+  <img src="production/qa/evidence/faz5-ui/02-farm.png" width="200" alt="Çiftlik sekmesi: kat seçici, büyüme evreleri, tohum şeridi">
+  <img src="production/qa/evidence/faz5-ui/02-lab.png" width="200" alt="Laboratuvar: iki ebeveyn ve çaprazlama">
+  <img src="production/qa/evidence/faz5-ui/02-market.png" width="200" alt="Pazar: borsa haberleri, ürünler, VIP siparişler">
+  <img src="production/qa/evidence/faz5-ui/02-dex.png" width="200" alt="Seed-Dex koleksiyonu">
 </p>
 
 | Faz | Kapsam | Durum |
 |---|---|---|
-| 1 | `PlantGene` kaynağı, Mendel çaprazlama, mutasyon, katmanlı `PlantInstance`, `SignalBus` | **Hazır, testli** |
-| 2 | Hidroponik ızgara, büyüme döngüsü, kaydırarak hasat | Planlı |
-| 3 | Borsa, siparişler, envanter | Planlı |
-| 4 | Otomasyon, hasat dronları, yeni katlar | Planlı |
-| 5 | Mobil arayüz, Seed-Dex, şifreli kayıt, çevrimdışı kazanç | Planlı |
+| 1 | `PlantGene` kaynağı, Mendel çaprazlama, %5 mutasyon, katmanlı `PlantInstance`, `SignalBus` | **Hazır, testli** |
+| 2 | Hidroponik ızgara (`TileMapLayer`), büyüme evreleri, su/UV, kaydırarak hasat + kombo, ses/parçacık | **Hazır, testli** |
+| 3 | Dinamik borsa (arz-talep + haber olayları), envanter, VIP siparişler | **Hazır, testli** |
+| 4 | Sulama/UV matrisi, hasat dronu durum makinesi, yeni katlar | **Hazır, testli** |
+| 5 | Dikey mobil arayüz, Seed-Dex, şifreli kayıt, çevrimdışı kazanç, ayarlar (yazı boyutu, renk körlüğü, hareketi azalt) | **Hazır, testli** |
 
 ```bash
-# Genetik laboratuvarını aç (şu an ana sahne): iki tohumu çaprazla, çocuğa dokun, mutasyon bildirimini gör
-godot --path . --windowed --resolution 540x960
+# Oyunu aç (ana sahne src/ui/main.tscn). Temiz klonda önce: godot --headless --path . --import  (çeviri dosyasını üretir)
+godot --path . --windowed
 
-bash tools/run_tests.sh                                   # tüm testler
-bash tools/capture_screenshot.sh res://src/dev/genetics_lab.tscn out.png -- --seed=3 --cross=1   # gerçek çizimle 1080x1920 ekran görüntüsü
-godot --headless --export-debug "Android" build/floralab-debug.apk   # Android APK (önce: bash tools/setup-godot-android.sh)
+bash tools/run_tests.sh                                   # tüm testler (345)
+bash tools/capture_faz5_evidence.sh                       # arayüz ekran görüntülerini yeniden üret (gerçek çizim, 1080x1920 ve 1080x2400)
+bash tools/setup-godot-android.sh                         # bir kez: Android dışa aktarma araçları
+godot --headless --export-debug "Android" build/floralab-debug.apk
+# Release (imza bilgisi ortam değişkeninden; anahtar deposu depoda YOK):
+GODOT_ANDROID_KEYSTORE_RELEASE_PATH=... GODOT_ANDROID_KEYSTORE_RELEASE_USER=... GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=... \
+  godot --headless --export-release "Android Release" build/floralab-1.0.0.apk
 ```
 
+**Bilinen sınırlar (dürüst liste):** gerçek bir Android cihazda/emülatörde çalıştırılmadı (APK paket, imza ve başsız açılış olarak doğrulandı);
+ekonomi insan oynatılarak değil benzetimle dengelendi; kayıt şifrelemesi caydırıcıdır, güvenlik değildir; gdUnit4 yerine kendi test koşucusu
+kullanılıyor (üçüncü taraf kod çalıştırma izni verilmedi); ses yer tutucudur; yalnızca Türkçe.
+
 - Mimari, klasör şeması, Autoload listesi, genetik kuralları ve formüller: **[docs/architecture/floralab-architecture.md](docs/architecture/floralab-architecture.md)**
-- Tasarım kaydı: [design/game-brief.md](design/game-brief.md) · Kanıt ekran görüntüleri: [production/qa/evidence/faz1-plant-instance/](production/qa/evidence/faz1-plant-instance/README.md)
+- Tasarım kaydı: [design/game-brief.md](design/game-brief.md) · Kanıt ekran görüntüleri: [faz1](production/qa/evidence/faz1-plant-instance/README.md), [faz2](production/qa/evidence/faz2-farm/README.md), [faz5](production/qa/evidence/faz5-ui/README.md)
 - Test altyapısı ve gdUnit4 durumu: [tests/README.md](tests/README.md)
 
 ---

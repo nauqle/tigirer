@@ -17,6 +17,7 @@
 - Fail state yoktur (rahat / idle tycoon). Bir oturum, oyuncu **en az bir yeni kombinasyon keşfedip ya da bir sipariş teslim ettiğinde** tamamlanmış hisseder (öneri).
 
 ## MVP — what must exist to be the game
+<!-- Durum (1.0.0): aşağıdakilerin hepsi uygulandı ve testli; ayrıntı ve sapmalar docs/architecture/floralab-architecture.md -->
 - Katmanlı prosedürel bitki: gövde + yaprak + çiçek/meyve parçaları, genetik renk ve parlama (FAZ 1)
 - Mendel çaprazlama, baskın/çekinik parçalar, %5 mutasyon, kalıtım (FAZ 1)
 - Hidroponik ızgara, büyüme evreleri, su/ışık çarpanları, parmak kaydırarak toplu hasat (FAZ 2)
@@ -42,5 +43,7 @@
 **Who it's for / what they feel:** Kısa oturumlarda tatmin edici hasat ve "yeni bir şey keşfettim" hissi arayan mobil idle/tycoon oyuncuları.
 
 **Art & audio direction:** Neon-cyber hidroponik: koyu gökdelen arka planı, parlayan bitkiler, vektör (SVG) parçalardan prosedürel birleşim; ASMR hasat sesleri ve parçacıkları (ses tasarımı FAZ 2'de).
+
+**Dürüst durum notu (1.0.0):** denge sayıları (fiyat, maliyet, süre) benzetimle ayarlandı, insan oynatılmadı; "bir oturumda yeni kombinasyon keşfet ya da sipariş teslim et" hissi bu yüzden oyuncu testiyle doğrulanmalı.
 
 **Reference game:** [Sahibi doldurmalı. Genetik çeşitlilik hissinin kaynağı olarak sahibin aklında bir oyun varsa buraya yazılır.]
