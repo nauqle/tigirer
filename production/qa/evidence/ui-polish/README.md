@@ -1,6 +1,6 @@
 # Arayüz cila turu: görsel kanıt
 
-Kapsanan iş: tasarım dili ("Gece Serası", `design/design-language.md`), yeni yazı tipleri ve ikon seti, Türkçe + İngilizce, gün-gece manzarası, yeniden
+Kapsanan iş: 2.5D çiftlik sahnesi (3D geometri + perspektif kamera + ışık), tasarım dili ("Gece Serası", `design/design-language.md`), yeni yazı tipleri ve ikon seti, Türkçe + İngilizce, gün-gece manzarası, yeniden
 tasarlanan HUD / gezinme / çiftlik / lab / pazar / Seed-Dex / geliştir / ayarlar / hedefler / açılış kartı / çevrimdışı özeti. Hikâye dosyası yok
 (`minimal` kip): tasarım kaydı `design/game-brief.md` ve `design/design-language.md`, mimari `docs/architecture/floralab-architecture.md`.
 
@@ -14,7 +14,10 @@ Gerçek çizimle (başsız değil), GL Compatibility, `--write-movie` 75. karesi
 
 | Dosya | Ne gösteriyor |
 |---|---|
-| `tr-farm`, `en-farm` | Çiftlik: cam çerçeveli ızgara, akan sulama damlacıkları, olgun bitkide halka + ışıltı, FLORA ipucu, Sula/Hasat/Ekim, tohum tepsisi, hedef çipi |
+| `tr-farm`, `en-farm` | Çiftlik (2.5D sahne): cam kutu, raflar, torna profilli saksılar, akan sulama borusu, UV lambası huzmeleri, olgun bitkide halka + ışıltı, FLORA ipucu, Sula/Hasat/Ekim, tohum tepsisi, hedef çipi |
+| `tr-farm-day` | Aynı sahne gündüz ışığında (sıcak ortam ışığı, açık duvar) |
+| `en-farm-drones` | Hasat dronları: üs pedi, uçan dron, hasat parlaması ve kombo efektleri |
+| `tr-farm-tower` | 4×4 çatı katı: dört bölmeli kule, perspektif, UV lambaları |
 | `tr-lab`, `en-lab` | Lab: iki ebeveyn "kavanozu", DNA simgesi, çaprazlama düğmesi (fiyat çipli), FLORA ipucu |
 | `tr-market`, `en-market` | Pazar: fiyat tablosu (mini grafik + yüzde), borsa haberleri, ürün satırları, VIP sipariş biletleri |
 | `tr-dex`, `en-dex` | Seed-Dex: tamamlanma halkası, nadirlik çerçeveli kartlar, kilitli yer tutucular |
@@ -45,7 +48,10 @@ Gerçek çizimle (başsız değil), GL Compatibility, `--write-movie` 75. karesi
 8. **Görüntülerden bulunan iki kusur:** (a) HUD'daki yüzen "+N" kazancı, sayı hâlâ sayarken sayının üstüne biniyordu ("+4000" ile "4.160" iç içe); `CreditTag.final_width()` ile yan tarafa konuyor
    (`credit_tag_test.gd`, düzeltmeden önce başarısız görüldü). (b) Pazar'daki haber kartı etkin olayı hem ayrıntılı satırla hem "geçmiş" listesinde iki kez gösteriyordu;
    geçmiş artık yalnızca bitmiş olayları anıyor (`test_the_news_card_shows_an_active_headline_once_not_again_as_history`, düzeltmeden önce başarısız görüldü).
-9. **Sessiz oyun:** efektlerin altında çok alçak, dikişsiz bir sera uğultusu döngüsü eklendi (ses ayarına bağlı; `audio_service_ambience_test.gd`). Görüntüde görünmez.
+9. **2.5D çiftlik: görüntüden bulunanlar.** (a) Toplamalı UV huzmesi bitkinin önünde çizilince yaprakları soluk gri gösteriyordu (mor ekleme); huzme sıralamada bitkinin arkasına alındı.
+   (b) Compatibility'de gölgelendirilmemiş `ALBEDO` doğrudan gösterim değeri: 0.5 yazıp 128 okundu, atlas dokusunda renk uzayı çevirisi gerekmedi (önce yanlışlıkla çeviri eklenip bitkiler koyulaşmıştı).
+   (c) Saksılar ve raflar siyahtı (metalik malzeme + yansıma yok): metaliklik düşürülüp ortam ışığı artırıldı.
+10. **Sessiz oyun:** efektlerin altında çok alçak, dikişsiz bir sera uğultusu döngüsü eklendi (ses ayarına bağlı; `audio_service_ambience_test.gd`). Görüntüde görünmez.
 
 ## Bu görüntüler neyi kapsar, neyi kapsamaz
 
@@ -60,5 +66,7 @@ Gerçek çizimle (başsız değil), GL Compatibility, `--write-movie` 75. karesi
 bash .claude/scripts/review-receipts.sh hash src/ui/main.gd src/ui/common/ui_tokens.gd src/ui/common/ui_theme.gd src/ui/common/ui_kit.gd src/ui/common/price_button.gd \
   src/ui/common/nav_bar.gd src/ui/common/night_backdrop.gd src/ui/hud/hud_bar.gd src/ui/panels/farm_panel.gd src/ui/panels/lab_panel.gd src/ui/panels/market_panel.gd \
   src/ui/panels/dex_panel.gd src/ui/panels/upgrades_panel.gd src/ui/panels/settings_overlay.gd src/ui/panels/goals_overlay.gd src/ui/farm/farm_view.gd \
-  src/ui/common/credit_tag.gd src/ui/common/toast_layer.gd src/ui/audio/audio_service.gd src/ui/audio/sfx_bank.gd src/dev/ui_showcase.gd > production/qa/evidence/ui-polish/stamp.txt
+  src/ui/farm/farm_view.gd src/ui/farm/farm_stage.gd src/ui/farm/farm_stage_parts.gd src/ui/farm/plant_atlas.gd src/ui/farm/pot_overlay.gd \
+  assets/shaders/spatial_plant_billboard.gdshader assets/shaders/spatial_wall.gdshader assets/shaders/spatial_pipe_flow.gdshader assets/shaders/spatial_glass.gdshader \
+  assets/shaders/spatial_uv_beam.gdshader assets/shaders/spatial_plant_halo.gdshader src/ui/common/credit_tag.gd src/ui/common/toast_layer.gd src/ui/audio/audio_service.gd src/ui/audio/sfx_bank.gd src/dev/ui_showcase.gd > production/qa/evidence/ui-polish/stamp.txt
 ```
