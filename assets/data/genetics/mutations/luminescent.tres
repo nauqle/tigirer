@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"luminescent"
-display_name = "Biyolüminesan"
+display_name = "MUT_LUMINESCENT"
 weight = 30
 growth_multiplier = 1
 water_multiplier = 1

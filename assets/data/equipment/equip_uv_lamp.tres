@@ -6,8 +6,8 @@
 script = ExtResource("1_script")
 id = &"equip_uv_lamp"
 kind = 1
-display_name = "UV Büyüme Lambası"
-description = "Satırdaki bitkileri her seviyede %50 daha hızlı büyütür."
+display_name = "EQ_UV_LAMP_NAME"
+description = "EQ_UV_LAMP_DESC"
 cost = 260
 cost_growth = 1.8
 max_level = 2

@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"food_scarcity"
-headline = "Gıda kıtlığı alarmı"
-body = "Şehirde her şeyin fiyatı artıyor."
+headline = "EVT_FOOD_SCARCITY_HEAD"
+body = "EVT_FOOD_SCARCITY_BODY"
 scope = 0
 target_ids = Array[StringName]([])
 price_multiplier = 1.3

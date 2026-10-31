@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = &"flower_tulip"
 layer = 2
-display_name = "Lale Çiçek"
+display_name = "PART_FLOWER_TULIP"
 texture = ExtResource("2_texture")
 anchor = Vector2(64, 116)
 dominance = 1

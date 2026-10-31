@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"luminous_fashion"
-headline = "Biyolüminesan moda"
-body = "Işıldayan bitkiler gece kulüplerinin gözdesi oldu."
+headline = "EVT_LUMINOUS_FASHION_HEAD"
+body = "EVT_LUMINOUS_FASHION_BODY"
 scope = 2
 target_ids = Array[StringName]([&"luminescent"])
 price_multiplier = 1.6

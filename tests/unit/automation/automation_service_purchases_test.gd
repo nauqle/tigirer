@@ -160,3 +160,48 @@ func test_the_lab_level_survives_a_round_trip() -> void:
 	restored.load_dict(JSON.parse_string(JSON.stringify(_service.to_dict())) as Dictionary)
 
 	assert_eq(restored.lab_uv_level, 1)
+
+
+func test_the_cheapest_purchase_is_the_lowest_next_price_across_open_floors_and_the_next_unlock() -> void:
+	# Başlangıç: sulama 100 (satır başına), UV 200, dron 300, lab UV 400, 1. katı açma 500 -> en ucuz 100
+	assert_eq(_service.cheapest_purchase_cost(), 100)
+
+	for row: int in _farm.get_floor(0).rows:
+		_service.buy_irrigation(0, row)  # tüm sulamalar bitti: en ucuz UV (200)
+
+	assert_eq(_service.cheapest_purchase_cost(), 200, "sulama kalmadı, UV en ucuz")
+
+
+func test_the_cheapest_purchase_ignores_maxed_out_and_locked_floor_equipment() -> void:
+	for row: int in _farm.get_floor(0).rows:
+		_service.buy_irrigation(0, row)
+		_service.buy_uv_lamp(0, row)
+		_service.buy_uv_lamp(0, row)  # UV 2 seviye de bitti
+	for i: int in 3:
+		_service.buy_drone(0)  # 3 dron bitti
+	for i: int in 3:
+		_service.buy_lab_uv()  # lab UV bitti
+
+	# Kalan: yalnızca 1. katı açma (500); kilitli 1. katın donanımı sayılmaz, 2. kat önceki açılmadan sayılmaz
+	assert_eq(_service.cheapest_purchase_cost(), 500)
+
+	_service.unlock_floor(1)
+	assert_true(_service.cheapest_purchase_cost() >= 100, "yeni katın donanımı artık sayılır")
+
+
+func test_with_nothing_left_to_buy_the_cheapest_cost_is_minus_one() -> void:
+	_wallet.add_credits(1000000)
+	for index: int in _service.floor_defs.size():
+		if index > 0:
+			_service.unlock_floor(index)
+		var floor_state: FloorState = _farm.get_floor(index)
+		for row: int in floor_state.rows:
+			_service.buy_irrigation(index, row)
+			for level: int in 4:
+				_service.buy_uv_lamp(index, row)
+		for level: int in 6:
+			_service.buy_drone(index)
+	for level: int in 6:
+		_service.buy_lab_uv()
+
+	assert_eq(_service.cheapest_purchase_cost(), -1)

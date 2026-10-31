@@ -46,6 +46,7 @@ var news: Array[String] = []
 var _rng: RandomNumberGenerator
 var _trend: Dictionary = {}  # fruit_id (StringName) -> float
 var _supply: Dictionary = {}  # fruit_id (StringName) -> float
+var _history: Dictionary = {}  # fruit_id (StringName) -> PackedFloat32Array (en eski önce)
 var _update_timer: float = 0.0
 var _next_event_in: float = 0.0
 
@@ -57,9 +58,11 @@ func setup(economy_config: EconomyConfig, events: Array[MarketEventDef], rng: Ra
 	_rng = rng
 	_trend.clear()
 	_supply.clear()
+	_history.clear()
 	for fruit_id: StringName in fruit_ids:
 		_trend[fruit_id] = 1.0
 		_supply[fruit_id] = 1.0
+		_history[fruit_id] = PackedFloat32Array([1.0])
 	active_events.clear()
 	news.clear()
 	_update_timer = config.market_update_seconds
@@ -67,6 +70,27 @@ func setup(economy_config: EconomyConfig, events: Array[MarketEventDef], rng: Ra
 
 
 # ------------------------------------------------------------------- fiyatlar
+
+
+## Meyvenin şu anki fiyat endeksi: eğilim x (mutasyondan bağımsız) olay çarpanları. Grafik bunu çizer; arz (satışla düşen) ayrıdır.
+func price_index(fruit_id: StringName) -> float:
+	return trend_of(fruit_id) * event_multiplier(fruit_id, [] as Array[StringName])
+
+
+## Meyvenin son fiyat endeksi örnekleri (en eski önce); bilinmeyen meyve için boş. Dönen dizi bir KOPYADIR.
+func history_of(fruit_id: StringName) -> PackedFloat32Array:
+	var samples: PackedFloat32Array = _history.get(fruit_id, PackedFloat32Array()) as PackedFloat32Array
+	return samples.duplicate()
+
+
+## Her meyvenin güncel endeksini geçmişe ekler; sınırı aşan en eski örnekler atılır.
+func _record_history() -> void:
+	for fruit_id: StringName in _history.keys():
+		var samples: PackedFloat32Array = _history[fruit_id] as PackedFloat32Array
+		samples.append(price_index(fruit_id))
+		while samples.size() > config.price_history_size:
+			samples.remove_at(0)
+		_history[fruit_id] = samples
 
 
 ## Meyve türünün talep eğilimi (1.0 = nötr).
@@ -160,6 +184,7 @@ func _update_trends() -> void:
 		var trend: float = float(_trend[fruit_id])
 		trend += config.price_reversion * (1.0 - trend) + config.price_volatility * _rng.randfn(0.0, 1.0)
 		_trend[fruit_id] = clampf(trend, config.price_min, config.price_max)
+	_record_history()
 	prices_changed.emit()
 
 
@@ -173,6 +198,7 @@ func _expire_events(delta: float) -> void:
 		active_events.erase(active)
 		event_ended.emit(active.def)
 	if not finished.is_empty():
+		_record_history()
 		prices_changed.emit()
 
 
@@ -208,6 +234,7 @@ func start_event(event_def: MarketEventDef) -> void:
 	while news.size() > config.news_history_size:
 		news.pop_back()
 	event_started.emit(event_def)
+	_record_history()
 	prices_changed.emit()
 
 
@@ -232,7 +259,14 @@ func to_dict() -> Dictionary:
 	var events: Array = []
 	for active: ActiveEvent in active_events:
 		events.append({"id": String(active.def.id), "remaining": active.remaining})
+	var history: Dictionary = {}
+	for fruit_id: StringName in _history.keys():
+		var samples: Array = []
+		for value: float in (_history[fruit_id] as PackedFloat32Array):
+			samples.append(snappedf(value, 0.0001))
+		history[String(fruit_id)] = samples
 	return {
+		"history": history,
 		"trend": trends,
 		"supply": supplies,
 		"events": events,
@@ -265,6 +299,16 @@ func load_dict(data: Dictionary) -> void:
 	news.clear()
 	for headline: Variant in data.get("news", []) as Array:
 		news.append(String(headline))
+	var saved_history: Dictionary = data.get("history", {}) as Dictionary
+	for fruit_id: StringName in _history.keys():
+		var restored: PackedFloat32Array = PackedFloat32Array()
+		for value: Variant in saved_history.get(String(fruit_id), []) as Array:
+			restored.append(float(value))
+		if restored.is_empty():
+			restored.append(price_index(fruit_id))
+		while restored.size() > config.price_history_size:
+			restored.remove_at(0)
+		_history[fruit_id] = restored
 	prices_changed.emit()
 
 

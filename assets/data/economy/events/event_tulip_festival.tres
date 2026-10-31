@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"tulip_festival"
-headline = "Lale festivali başladı"
-body = "Şehir lale topluyor, çiçekçiler stok arıyor."
+headline = "EVT_TULIP_FESTIVAL_HEAD"
+body = "EVT_TULIP_FESTIVAL_BODY"
 scope = 1
 target_ids = Array[StringName]([&"flower_tulip"])
 price_multiplier = 1.7

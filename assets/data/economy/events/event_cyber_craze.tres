@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"cyber_craze"
-headline = "Siber çiçek çılgınlığı!"
-body = "Kulüplerde siber küre ve yıldız çiçeği satılmıyor, kapışılıyor."
+headline = "EVT_CYBER_CRAZE_HEAD"
+body = "EVT_CYBER_CRAZE_BODY"
 scope = 1
 target_ids = Array[StringName]([&"fruit_orb", &"flower_star"])
 price_multiplier = 1.8

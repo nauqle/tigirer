@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"pod_shortage"
-headline = "Bakla kıtlığı"
-body = "Tedarik zinciri aksadı, bakla fiyatları yükseliyor."
+headline = "EVT_POD_SHORTAGE_HEAD"
+body = "EVT_POD_SHORTAGE_BODY"
 scope = 1
 target_ids = Array[StringName]([&"fruit_pod"])
 price_multiplier = 1.5

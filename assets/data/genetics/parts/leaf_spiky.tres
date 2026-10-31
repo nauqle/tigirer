@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = &"leaf_spiky"
 layer = 1
-display_name = "Dikenli Yaprak"
+display_name = "PART_LEAF_SPIKY"
 texture = ExtResource("2_texture")
 anchor = Vector2(6, 50)
 dominance = 2

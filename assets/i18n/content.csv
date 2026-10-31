@@ -1,0 +1,85 @@
+keys,tr,en
+PART_FLOWER_STAR,Yıldız Çiçek,Star Bloom
+PART_FLOWER_TULIP,Lale Çiçek,Tulip Bloom
+PART_FRUIT_BERRY,Meyve Salkımı,Berry Cluster
+PART_FRUIT_BULB,Yumru Meyve,Bulb Fruit
+PART_FRUIT_ORB,Siber Küre,Cyber Orb
+PART_FRUIT_POD,Bakla Meyve,Bean Pod
+PART_LEAF_BROAD,Geniş Yaprak,Broad Leaf
+PART_LEAF_CIRCUIT,Devre Yaprağı,Circuit Leaf
+PART_LEAF_FERN,Eğrelti Yaprağı,Fern Leaf
+PART_LEAF_OVAL,Oval Yaprak,Oval Leaf
+PART_LEAF_SPIKY,Dikenli Yaprak,Spiked Leaf
+PART_STEM_BAMBOO,Bambu Gövde,Bamboo Stem
+PART_STEM_CYBER,Siber Boru Gövde,Cyber-Pipe Stem
+PART_STEM_REED,Kamış Gövde,Reed Stem
+PART_STEM_VINE,Sarmaşık Gövde,Vine Stem
+MUT_CHIMERA,Kimera,Chimera
+MUT_CRYSTALLINE,Kristalize,Crystalline
+MUT_DROUGHT_PROOF,Kuraklığa Dayanıklı,Drought-Proof
+MUT_GOLDEN,Altın,Golden
+MUT_HYPER_GROWTH,Hiper Büyüme,Hyper Growth
+MUT_LUMINESCENT,Biyolüminesan,Bioluminescent
+SEED_BAMBOO_POD,Bambu Bakla,Bamboo Pod
+SEED_CYBER_CARRIER,Siber Taşıyıcı,Cyber Carrier
+SEED_REED_BERRY,Kamış Meyve,Reed Berry
+SEED_VINE_TULIP,Sarmaşık Lale,Vine Tulip
+FLOOR_0,Lobi Serası,Lobby Greenhouse
+FLOOR_1,Asma Kat,Mezzanine Deck
+FLOOR_2,Gökbahçe,Sky Garden
+FLOOR_3,Çatı Dizisi,Rooftop Array
+EQ_DRONE_NAME,Hasat Dronu,Harvest Drone
+EQ_DRONE_DESC,Olgun bitkileri kendiliğinden biçer ve aynı bitkiyi yeniden diker.,Cuts ripe plants by itself and replants the pot.
+EQ_IRRIGATION_NAME,Otomatik Sulama,Auto-Irrigation
+EQ_IRRIGATION_DESC,Satırdaki bütün saksıları sürekli sulu tutar; elle sulama gerekmez.,Keeps every pot in the row watered. No more tapping.
+EQ_LAB_UV_NAME,Laboratuvar UV Odası,Lab UV Chamber
+EQ_LAB_UV_DESC,Çaprazlamada yeni mutasyon çıkma olasılığını artırır.,Raises the odds of a new mutation when you crossbreed.
+EQ_UV_LAMP_NAME,UV Büyüme Lambası,UV Grow Lamp
+EQ_UV_LAMP_DESC,Satırdaki bitkileri her seviyede %50 daha hızlı büyütür.,Each level grows the plants in the row 50% faster.
+EVT_BERRY_GLUT_HEAD,Meyve bolluğu: fiyatlar düştü,Berry glut: prices slump
+EVT_BERRY_GLUT_BODY,"Toptancılar depoları doldurdu, salkım fiyatları düşüşte.",Wholesalers are drowning in clusters. Prices keep sliding.
+EVT_BULB_BOOM_HEAD,Yumru meyve patlaması,Bulb-fruit boom
+EVT_BULB_BOOM_BODY,Sağlıklı beslenme akımı yumru meyveyi moda yaptı.,A wellness trend just made bulb fruit the thing to eat.
+EVT_CYBER_CRAZE_HEAD,Siber çiçek çılgınlığı!,Cyber-bloom craze!
+EVT_CYBER_CRAZE_BODY,"Kulüplerde siber küre ve yıldız çiçeği satılmıyor, kapışılıyor.",Clubs can't keep cyber orbs and star blooms on the shelf.
+EVT_FOOD_SCARCITY_HEAD,Gıda kıtlığı alarmı,Food scarcity alert
+EVT_FOOD_SCARCITY_BODY,Şehirde her şeyin fiyatı artıyor.,Everything in the city costs more today.
+EVT_GOLDEN_WEEK_HEAD,Altın hafta,Golden Week
+EVT_GOLDEN_WEEK_BODY,Kuyumcular altın meyvelere prim ödüyor.,Jewelers are paying a premium for golden fruit.
+EVT_LUMINOUS_FASHION_HEAD,Biyolüminesan moda,Bioluminescent fashion
+EVT_LUMINOUS_FASHION_BODY,Işıldayan bitkiler gece kulüplerinin gözdesi oldu.,Glowing plants have become the nightclub darlings.
+EVT_MARKET_CRASH_HEAD,Borsa sarsıldı,Market shock
+EVT_MARKET_CRASH_BODY,"Yatırımcılar panikte, her ürün ucuza gidiyor.",Investors are panicking. Every crop sells cheap.
+EVT_POD_SHORTAGE_HEAD,Bakla kıtlığı,Pod shortage
+EVT_POD_SHORTAGE_BODY,"Tedarik zinciri aksadı, bakla fiyatları yükseliyor.",Supply chains stalled. Bean prices are climbing.
+EVT_TULIP_FESTIVAL_HEAD,Lale festivali başladı,Tulip festival begins
+EVT_TULIP_FESTIVAL_BODY,"Şehir lale topluyor, çiçekçiler stok arıyor.",The whole city is collecting tulips; florists are hunting for stock.
+ORD_BULB_DELI_TITLE,Gurme Siparişi: Yumru Meyve,Gourmet Order: Bulb Fruit
+CUST_SEF_ARAS,Şef Aras,Chef Aras
+CUST_LEZZET_ATOLYESI,Lezzet Atölyesi,Flavor Workshop
+ORD_CAFE_BERRY_TITLE,Kafe Siparişi: Meyve Salkımı,Café Order: Berry Cluster
+CUST_KAFE_NOVA,Kafe Nova,Café Nova
+CUST_BISTRO_21,Bistro 21,Bistro 21
+CUST_KUZEY_KAFE,Kuzey Kafe,North Café
+ORD_CYBER_COLLECTOR_TITLE,Koleksiyoncu: Siber Küre,Collector: Cyber Orb
+CUST_KOLEKSIYONCU_VEGA,Koleksiyoncu Vega,Collector Vega
+CUST_NEON_MUZAYEDE,Neon Müzayede,Neon Auction
+ORD_FLORIST_TULIP_TITLE,Çiçekçi Siparişi: Lale,Florist Order: Tulip
+CUST_LALE_EVI,Lale Evi,Tulip House
+CUST_CICEK_SEPETI,Çiçek Sepeti,Flower Basket
+CUST_GUL_SOKAK_CICEKCISI,Gül Sokak Çiçekçisi,Rose Street Florist
+ORD_GOLDEN_JEWELER_TITLE,Kuyumcu: Altın Meyve,Jeweler: Golden Fruit
+CUST_KUYUMCU_SELIN,Kuyumcu Selin,Jeweler Selin
+CUST_SARRAF_AZIZ,Sarraf Aziz,Jeweler Aziz
+ORD_LAB_STAR_TITLE,Laboratuvar Siparişi: Yıldız Çiçek,Lab Order: Star Bloom
+CUST_DR_NOVA,Dr. Nova,Dr. Nova
+CUST_GENETIK_ENSTITUSU,Genetik Enstitüsü,Genetics Institute
+ORD_LUMINOUS_GALA_TITLE,Gala Siparişi: Parlayan Bitki,Gala Order: Glowing Plant
+CUST_GECE_GALERISI,Gece Galerisi,Night Gallery
+CUST_NEON_GALA,Neon Gala,Neon Gala
+ORD_POD_MARKET_TITLE,Hal Siparişi: Bakla,Market Order: Bean Pod
+CUST_MERKEZ_HAL,Merkez Hal,Central Market
+CUST_MAHALLE_PAZARI,Mahalle Pazarı,Corner Market
+ORD_PREMIUM_DELIVERY_TITLE,Yüksek Değerli Teslimat,High-Value Delivery
+CUST_VIP_LOJISTIK,VIP Lojistik,VIP Logistics
+CUST_SKYLINE_KATERING,Skyline Katering,Skyline Catering

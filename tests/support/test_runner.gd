@@ -24,6 +24,8 @@ const EXIT_PARSE_ERROR: int = 105
 
 
 func _initialize() -> void:
+	# Testler Türkçe metinle yazıldı; işletim sistemi dilinden bağımsız ve deterministik olsun diye dil sabitlenir.
+	TranslationServer.set_locale("tr")
 	# Ağaç ilk kareye kadar "çalışmaya başlamış" sayılmaz: `add_child` ile eklenen düğümlerin `_ready()`'si
 	# ancak ondan sonra tetiklenir. Node gerektiren (entegrasyon) testler için bir kare beklenir.
 	await process_frame

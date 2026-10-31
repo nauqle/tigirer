@@ -6,8 +6,8 @@
 script = ExtResource("1_script")
 id = &"equip_irrigation"
 kind = 0
-display_name = "Otomatik Sulama"
-description = "Satırdaki bütün saksıları sürekli sulu tutar; elle sulama gerekmez."
+display_name = "EQ_IRRIGATION_NAME"
+description = "EQ_IRRIGATION_DESC"
 cost = 150
 cost_growth = 1.0
 max_level = 1

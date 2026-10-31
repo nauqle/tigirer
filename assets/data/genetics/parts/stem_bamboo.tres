@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = &"stem_bamboo"
 layer = 0
-display_name = "Bambu Gövde"
+display_name = "PART_STEM_BAMBOO"
 texture = ExtResource("2_texture")
 anchor = Vector2(64, 400)
 dominance = 1

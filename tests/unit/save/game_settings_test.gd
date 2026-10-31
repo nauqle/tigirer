@@ -81,3 +81,39 @@ func test_settings_survive_a_json_round_trip_and_missing_keys_fall_back_to_defau
 	restored.load_dict({})
 	assert_true(restored.sound_on, "eksik anahtar varsayılana döner")
 	assert_eq(restored.text_scale_index, 1)
+
+
+func test_language_starts_unset_and_only_supported_codes_are_accepted() -> void:
+	var settings: GameSettings = GameSettings.new()
+	var count: Dictionary = {"n": 0}
+	settings.changed.connect(func() -> void: count["n"] += 1)
+
+	assert_eq(settings.language, "", "ilk açılışta seçilmemiş")
+	settings.set_language("fr")
+	assert_eq(settings.language, "", "desteklenmeyen dil yok sayılır")
+	assert_eq(count["n"], 0)
+
+	settings.set_language("en")
+	assert_eq(settings.language, "en")
+	assert_eq(count["n"], 1)
+
+
+func test_the_default_language_follows_the_system_language_and_falls_back_to_english() -> void:
+	assert_eq(GameSettings.default_language("tr"), "tr")
+	assert_eq(GameSettings.default_language("tr_TR"), "tr")
+	assert_eq(GameSettings.default_language("TR"), "tr")
+	assert_eq(GameSettings.default_language("en_US"), "en")
+	assert_eq(GameSettings.default_language("de"), "en", "bilinmeyen sistem dili İngilizceye düşer")
+	assert_eq(GameSettings.default_language(""), "en")
+
+
+func test_the_language_survives_a_round_trip_and_garbage_is_dropped() -> void:
+	var settings: GameSettings = GameSettings.new()
+	settings.set_language("tr")
+	var restored: GameSettings = GameSettings.new()
+
+	restored.load_dict(JSON.parse_string(JSON.stringify(settings.to_dict())) as Dictionary)
+	assert_eq(restored.language, "tr")
+
+	restored.load_dict({"language": "klingon"})
+	assert_eq(restored.language, "", "bozuk dil seçimi temizlenir")

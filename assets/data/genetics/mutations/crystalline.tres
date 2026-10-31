@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"crystalline"
-display_name = "Kristalize"
+display_name = "MUT_CRYSTALLINE"
 weight = 12
 growth_multiplier = 1
 water_multiplier = 1

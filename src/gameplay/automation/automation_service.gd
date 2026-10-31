@@ -158,6 +158,24 @@ func current_level(kind: EquipmentDef.Kind, floor_index: int = 0, row: int = 0) 
 	return -1
 
 
+## En ucuz ALINABİLİR yükseltmenin maliyeti (sınıra gelmiş donanım ve kilitli katın donanımı sayılmaz; bir sonraki kapalı katın açma
+## bedeli sayılır); hiçbir şey kalmadıysa -1. Arayüz "yeni bir şey alınabilir" rozeti için kullanır.
+func cheapest_purchase_cost() -> int:
+	var best: int = _cheaper(-1, next_cost(EquipmentDef.Kind.LAB_UV))
+	for def: FloorDef in floor_defs:
+		var floor_state: FloorState = farm.get_floor(def.index)
+		if floor_state == null:
+			continue
+		if floor_state.unlocked:
+			for row: int in floor_state.rows:
+				best = _cheaper(best, next_cost(EquipmentDef.Kind.IRRIGATION, def.index, row))
+				best = _cheaper(best, next_cost(EquipmentDef.Kind.UV_LAMP, def.index, row))
+			best = _cheaper(best, next_cost(EquipmentDef.Kind.DRONE, def.index))
+		elif def.index > 0 and farm.get_floor(def.index - 1).unlocked:
+			best = _cheaper(best, def.unlock_cost)
+	return best
+
+
 ## Katı açmanın maliyeti; geçersizse -1.
 func floor_unlock_cost(floor_index: int) -> int:
 	if floor_index < 0 or floor_index >= floor_defs.size():
@@ -166,6 +184,15 @@ func floor_unlock_cost(floor_index: int) -> int:
 
 
 # ------------------------------------------------------------------ yardımcı
+
+
+## İki maliyetten küçüğü; -1 "yok" demektir ve hiçbir zaman seçilmez.
+static func _cheaper(current: int, candidate: int) -> int:
+	if candidate < 0:
+		return current
+	if current < 0 or candidate < current:
+		return candidate
+	return current
 
 
 ## Açık kat ve geçerli satır varsa katı döndürür; yoksa null.

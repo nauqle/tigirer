@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"drought_proof"
-display_name = "Kuraklığa Dayanıklı"
+display_name = "MUT_DROUGHT_PROOF"
 weight = 30
 growth_multiplier = 1
 water_multiplier = 0.5

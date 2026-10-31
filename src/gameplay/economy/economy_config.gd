@@ -40,6 +40,8 @@ extends Resource
 @export_range(0.0, 0.1, 0.0005) var supply_recovery_per_second: float = 0.002
 ## Arz çarpanının inebileceği en düşük değer (sürekli satışta fiyat bunun altına inmez).
 @export_range(0.1, 1.0, 0.05) var supply_floor: float = 0.4
+## Pazar grafiği için meyve başına tutulan fiyat endeksi örneği sayısı (her eğilim güncellemesinde bir örnek).
+@export_range(2, 120) var price_history_size: int = 24
 
 @export_group("Haber olayları")
 ## İki haber olayı arasındaki en kısa ve en uzun süre (oyun saniyesi).

@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="FloraLab: Cyber Harvest"
+config/version="1.1.0"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/art/icon.svg"
 run/main_scene="res://src/ui/main.tscn"
@@ -36,8 +37,8 @@ window/handheld/orientation=1
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://assets/i18n/strings.tr.translation")
-locale/fallback="tr"
+locale/translations=PackedStringArray("res://assets/i18n/strings.tr.translation", "res://assets/i18n/strings.en.translation", "res://assets/i18n/content.tr.translation", "res://assets/i18n/content.en.translation")
+locale/fallback="en"
 
 [rendering]
 

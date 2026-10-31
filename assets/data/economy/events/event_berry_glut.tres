@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"berry_glut"
-headline = "Meyve bolluğu: fiyatlar düştü"
-body = "Toptancılar depoları doldurdu, salkım fiyatları düşüşte."
+headline = "EVT_BERRY_GLUT_HEAD"
+body = "EVT_BERRY_GLUT_BODY"
 scope = 1
 target_ids = Array[StringName]([&"fruit_berry"])
 price_multiplier = 0.6

@@ -1,53 +1,97 @@
 class_name HudBar
 extends PanelContainer
-## Üst çubuk: kredi, oyun günü, hız düğmesi, menü düğmesi, itibar ve haber şeridi. Yalnızca gösterir; hız değişimi
-## `GameSession.set_speed` komutuyla yapılır, değerler SignalBus olaylarıyla güncellenir.
+## Üst çubuk (cam yüzey): kredi (sayarak yükselen), gün ve gün ilerlemesi, hız ve menü düğmeleri, itibar ve haber şeridi.
+## Yalnızca gösterir; hız değişimi `GameSession.set_speed` komutuyla yapılır, değerler SignalBus olaylarıyla güncellenir.
+## Kredi artınca küçük bir "+N" yükselip kaybolur; hareketi azalt açıkken yalnızca sayı değişir.
 ##
-## Uygular: design/game-brief.md, FAZ 5 mobil arayüz (kredi, zaman, borsa haberi her ekranda görünür).
+## Uygular: design/design-language.md, "Gezinme" (HUD); design/game-brief.md, FAZ 5 mobil arayüz (kredi, zaman, borsa haberi
+## her ekranda görünür).
 
 ## Menü (ayarlar) düğmesine basıldı.
 signal menu_requested
+## Hedef çipine basıldı.
+signal goal_requested
 
 const _SPEEDS: Array[float] = [1.0, 2.0, 5.0]
 
 var _session: GameSession
-var _credits: Label
-var _day: Label
-var _speed: Button
+var _credits: CreditTag
+var _day_icon: TextureRect
+var _day_label: Label
+var _day_bar: ProgressBar
+var _speed: FxButton
 var _reputation: Label
 var _news: Label
-var _reduce_motion: bool = false
+var _news_icon: TextureRect
+var _float_layer: Control
 var _last_credits: int = -1
+var _colorblind: bool = false
 
 
 ## Oturumu bağlar, arayüzü kurar ve olaylara abone olur.
 func setup(session: GameSession) -> void:
 	_session = session
-	var rows: VBoxContainer = UiKit.vbox(8)
+	theme_type_variation = &"Glass"
+	var rows: VBoxContainer = UiKit.vbox(UiTokens.SPACE_1)
 	add_child(rows)
-	var top: HBoxContainer = UiKit.hbox(14)
+
+	var top: HBoxContainer = UiKit.hbox(UiTokens.SPACE_2)
 	rows.add_child(top)
-	_credits = UiKit.label("", &"BigLabel")
+	_credits = CreditTag.new()
+	_credits.setup(&"DisplayLabel", UiTokens.ICON_LG * 0.62)
 	top.add_child(_credits)
 	top.add_child(UiKit.spacer())
-	_day = UiKit.label("", &"AccentLabel")
-	top.add_child(_day)
-	_speed = UiKit.button("", &"TabButton", 64.0)
-	_speed.custom_minimum_size.x = 110.0
+	var day_chip: HBoxContainer = UiKit.hbox(UiTokens.SPACE_1)
+	day_chip.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_day_icon = UiKit.icon(&"day", UiTokens.ICON_SM, UiTokens.SAP)
+	day_chip.add_child(_day_icon)
+	_day_label = UiKit.label("", &"AccentLabel")
+	_day_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	day_chip.add_child(_day_label)
+	top.add_child(day_chip)
+	_speed = UiKit.button("", &"IconButton", 68.0)
+	_speed.custom_minimum_size = Vector2(0.0, 68.0)
+	_speed.tooltip_text = tr("HUD_SPEED_TIP")
 	_speed.pressed.connect(_on_speed_pressed)
 	top.add_child(_speed)
-	var menu: Button = UiKit.button(tr("HUD_MENU"), &"TabButton", 64.0)
+	var menu: FxButton = UiKit.icon_button(&"menu", 68.0, UiTokens.ICON_SM)
+	menu.tooltip_text = tr("HUD_MENU_TIP")
 	menu.pressed.connect(func() -> void: menu_requested.emit())
 	top.add_child(menu)
-	var bottom: HBoxContainer = UiKit.hbox(14)
+
+	_day_bar = ProgressBar.new()
+	_day_bar.theme_type_variation = &"AquaProgress"
+	_day_bar.show_percentage = false
+	_day_bar.max_value = 1.0
+	_day_bar.step = 0.001
+	_day_bar.custom_minimum_size = Vector2(0.0, 6.0)
+	rows.add_child(_day_bar)
+
+	var bottom: HBoxContainer = UiKit.hbox(UiTokens.SPACE_2)
 	rows.add_child(bottom)
+	var rep_row: HBoxContainer = UiKit.hbox(UiTokens.SPACE_1)
+	rep_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	rep_row.add_child(UiKit.icon(&"star", UiTokens.ICON_SM * 0.85, UiTokens.SAP))
 	_reputation = UiKit.label("", &"MutedLabel")
-	bottom.add_child(_reputation)
+	_reputation.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	rep_row.add_child(_reputation)
+	bottom.add_child(rep_row)
+	var news_row: HBoxContainer = UiKit.hbox(UiTokens.SPACE_1)
+	_news_icon = UiKit.icon(&"news", UiTokens.ICON_SM * 0.85, UiTokens.TEXT_MUTED)
+	news_row.add_child(_news_icon)
 	_news = UiKit.label("", &"SmallLabel")
 	_news.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_news.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_news.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_news.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_news.clip_text = true
-	bottom.add_child(_news)
+	_news.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	news_row.add_child(_news)
+	bottom.add_child(news_row)
+
+	_float_layer = Control.new()
+	_float_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_float_layer.top_level = false
+	add_child(_float_layer)
 
 	SignalBus.credits_changed.connect(_on_credits_changed)
 	SignalBus.reputation_changed.connect(_on_reputation_changed)
@@ -70,18 +114,40 @@ func refresh() -> void:
 	_update_news()
 
 
-func set_reduce_motion(value: bool) -> void:
-	_reduce_motion = value
+## Renk körlüğü paleti (haber ikon/yazı renkleri).
+func set_colorblind(value: bool) -> void:
+	_colorblind = value
+	_update_news()
+
+
+## Günün evresi (0..1): gün/gece ikonu ve ilerleme çizgisi.
+func set_time_of_day(phase: float) -> void:
+	_day_bar.value = phase
+	var daytime: bool = NightBackdrop.is_daytime(phase)
+	_day_icon.texture = UiIcons.get_icon(&"day" if daytime else &"night")
+	_day_icon.modulate = UiTokens.SAP if daytime else UiTokens.UV
 
 
 func _on_credits_changed(credits: int) -> void:
-	_credits.text = "◆ %d" % credits
-	if _last_credits >= 0 and credits > _last_credits and not _reduce_motion:
-		_credits.pivot_offset = Vector2(0.0, _credits.size.y * 0.5)
-		var tween: Tween = create_tween()
-		tween.tween_property(_credits, "scale", Vector2(1.12, 1.12), 0.08)
-		tween.tween_property(_credits, "scale", Vector2.ONE, 0.18)
+	var gained: int = credits - _last_credits if _last_credits >= 0 else 0
+	_credits.set_amount(credits, true)
+	if gained > 0:
+		_spawn_gain(gained)
 	_last_credits = credits
+
+
+## "+N" yükselip kaybolur.
+func _spawn_gain(amount: int) -> void:
+	if UiMotion.reduce_motion or not is_inside_tree() or amount < 1:
+		return
+	var gain: Label = UiKit.label("+%s" % UiFormat.number(amount), &"GoldLabel")
+	_float_layer.add_child(gain)
+	gain.global_position = _credits.global_position + Vector2(_credits.size.x + 14.0, 4.0)
+	var tween: Tween = gain.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(gain, "position:y", gain.position.y - 26.0, UiTokens.DUR_SLOW * 2.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(gain, "modulate:a", 0.0, UiTokens.DUR_SLOW * 2.0).set_delay(UiTokens.DUR_SLOW)
+	tween.chain().tween_callback(gain.queue_free)
 
 
 func _on_reputation_changed(reputation: int) -> void:
@@ -89,11 +155,18 @@ func _on_reputation_changed(reputation: int) -> void:
 
 
 func _on_day_changed(day: int) -> void:
-	_day.text = tr("HUD_DAY") % day
+	_day_label.text = tr("HUD_DAY") % day
 
 
 func _on_speed_changed(speed: float) -> void:
-	_speed.text = "×%d" % int(round(speed)) if speed > 0.0 else "II"
+	if speed > 0.0:
+		_speed.text = "×%d" % int(round(speed))
+		_speed.icon = null
+		_speed.custom_minimum_size.x = 92.0
+	else:
+		_speed.text = ""
+		UiKit.set_button_icon(_speed, &"pause")
+		_speed.custom_minimum_size.x = 68.0
 
 
 func _on_speed_pressed() -> void:
@@ -105,15 +178,26 @@ func _on_market_event(_event_def: MarketEventDef) -> void:
 	_update_news()
 
 
-## Haber şeridi: süren ilk olay (▲ zam / ▼ düşüş), yoksa son başlık, yoksa "borsa sakin".
+## Haber şeridi: süren ilk olay (▲ zam / ▼ düşüş ikon ve renkle), yoksa son başlık, yoksa "borsa sakin".
 func _update_news() -> void:
+	if _session == null or _news == null:
+		return
+	var colors: Dictionary = UiTokens.palette(_colorblind)
 	if not _session.market.active_events.is_empty():
 		var event_def: MarketEventDef = _session.market.active_events[0].def
-		_news.text = "%s %s" % ["▲" if event_def.is_positive() else "▼", event_def.headline]
-		_news.theme_type_variation = &"GoodLabel" if event_def.is_positive() else &"BadLabel"
+		var positive: bool = event_def.is_positive()
+		var tint: Color = (colors["good"] as Color) if positive else (colors["bad"] as Color)
+		_news.text = tr(event_def.headline)
+		_news.add_theme_color_override("font_color", tint)
+		_news_icon.texture = UiIcons.get_icon(&"trend_up" if positive else &"trend_down")
+		_news_icon.modulate = tint
 	elif not _session.market.news.is_empty():
-		_news.text = _session.market.news[0]
-		_news.theme_type_variation = &"SmallLabel"
+		_news.text = tr(_session.market.news[0])
+		_news.add_theme_color_override("font_color", UiTokens.TEXT)
+		_news_icon.texture = UiIcons.get_icon(&"news")
+		_news_icon.modulate = UiTokens.TEXT_MUTED
 	else:
 		_news.text = tr("HUD_NEWS_QUIET")
-		_news.theme_type_variation = &"MutedLabel"
+		_news.add_theme_color_override("font_color", UiTokens.TEXT_MUTED)
+		_news_icon.texture = UiIcons.get_icon(&"news")
+		_news_icon.modulate = UiTokens.TEXT_MUTED

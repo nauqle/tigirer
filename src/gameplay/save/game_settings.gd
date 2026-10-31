@@ -11,6 +11,8 @@ signal changed
 
 ## Yazı boyutu basamakları (çarpan).
 const TEXT_SCALES: Array[float] = [0.9, 1.0, 1.2, 1.4]
+## Desteklenen arayüz dilleri (çeviri sütunları: assets/i18n/*.csv).
+const LANGUAGES: Array[String] = ["tr", "en"]
 
 var sound_on: bool = true
 var vibration_on: bool = true
@@ -22,6 +24,8 @@ var text_scale_index: int = 1
 var colorblind: bool = false
 ## Başlangıç öğreticisi tamamlandı mı?
 var tutorial_done: bool = false
+## Arayüz dili ("tr", "en"); boş = henüz seçilmedi (işletim sistemi diline göre ilk açılışta seçilir).
+var language: String = ""
 
 
 func text_scale() -> float:
@@ -53,6 +57,19 @@ func set_colorblind(value: bool) -> void:
 	changed.emit()
 
 
+## Dil seçer; desteklenmeyen kod yok sayılır.
+func set_language(code: String) -> void:
+	if not LANGUAGES.has(code):
+		return
+	language = code
+	changed.emit()
+
+
+## İşletim sistemi dil kodundan ("tr_TR", "en", "de" ...) varsayılan arayüz dili: Türkçe ise Türkçe, aksi halde İngilizce.
+static func default_language(os_language: String) -> String:
+	return "tr" if os_language.to_lower().begins_with("tr") else "en"
+
+
 func set_tutorial_done(value: bool) -> void:
 	tutorial_done = value
 	changed.emit()
@@ -67,6 +84,7 @@ func to_dict() -> Dictionary:
 		"text_scale": text_scale_index,
 		"colorblind": colorblind,
 		"tutorial_done": tutorial_done,
+		"language": language,
 	}
 
 
@@ -77,4 +95,6 @@ func load_dict(data: Dictionary) -> void:
 	text_scale_index = clampi(int(data.get("text_scale", 1)), 0, TEXT_SCALES.size() - 1)
 	colorblind = bool(data.get("colorblind", false))
 	tutorial_done = bool(data.get("tutorial_done", false))
+	var saved_language: String = String(data.get("language", ""))
+	language = saved_language if LANGUAGES.has(saved_language) else ""
 	changed.emit()

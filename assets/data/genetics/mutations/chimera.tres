@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"chimera"
-display_name = "Kimera"
+display_name = "MUT_CHIMERA"
 weight = 15
 growth_multiplier = 1
 water_multiplier = 1

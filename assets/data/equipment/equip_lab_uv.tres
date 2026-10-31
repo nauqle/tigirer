@@ -6,8 +6,8 @@
 script = ExtResource("1_script")
 id = &"equip_lab_uv"
 kind = 3
-display_name = "Laboratuvar UV Odası"
-description = "Çaprazlamada yeni mutasyon çıkma olasılığını artırır."
+display_name = "EQ_LAB_UV_NAME"
+description = "EQ_LAB_UV_DESC"
 cost = 400
 cost_growth = 2.0
 max_level = 3

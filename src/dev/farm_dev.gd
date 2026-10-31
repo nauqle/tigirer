@@ -59,7 +59,7 @@ func _ready() -> void:
 	_relay = relay
 	_farm.harvested.connect(_on_harvested)
 
-	var backdrop: CityBackdrop = CityBackdrop.new()
+	var backdrop: NightBackdrop = NightBackdrop.new()
 	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(backdrop)
 	move_child(backdrop, 0)

@@ -100,3 +100,11 @@ signal day_changed(day: int)
 
 ## Oyun hızı değişti.
 signal speed_changed(speed: float)
+
+# --- Hedefler ve rehber (cila turu) ---
+
+## Bir hedef tamamlandı (kimlik, ödül kredisi).
+signal goal_completed(goal_id: StringName, reward: int)
+
+## Hedef ilerlemesi ya da etkin hedef değişti (HUD ve çiftlik kartı yenilenir).
+signal goals_changed

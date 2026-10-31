@@ -1,102 +1,212 @@
 class_name SettingsOverlay
 extends Control
-## Ayarlar penceresi: ses, titreşim, hareketi azalt, yazı boyutu, renk körlüğü kipi, nasıl oynanır, şimdi kaydet ve
+## Ayarlar sayfası (alttan açılan sayfa): dil, ses, titreşim, hareketi azalt, renk körlüğü, yazı boyutu, nasıl oynanır, şimdi kaydet ve
 ## sıfırlama (iki adımlı onay). Değişiklikler `GameSettings` kurallarıyla yapılır (oyun durumunu etkilemez); sıfırlama ve kayıt
-## `GameSession` komutlarıdır.
+## `GameSession` komutlarıdır. Karartmaya dokununca ya da geri tuşuyla kapanır.
 ##
 ## Uygular: design/game-brief.md, FAZ 5 mobil arayüz; şablon kuralı: ölçeklenebilir yazı ve renk körlüğü kipi zorunlu,
-## hareket tercihine saygı.
+## hareket tercihine saygı; kullanıcı isteği: İngilizce dil seçeneği.
 
-## Pencere kapatıldı.
+## Sayfa kapandı.
 signal closed
 
 var _session: GameSession
-var _toggles: Dictionary = {}  # ad -> Button
-var _size_buttons: Array[Button] = []
+var _dim: ColorRect
+var _sheet: PanelContainer
+var _toggles: Dictionary = {}  # ad -> ToggleSwitch
+var _language: SegmentedControl
+var _sizes: SegmentedControl
 var _confirm_row: HBoxContainer
 var _reset_button: Button
+var _tween: Tween
 
 
 func setup(session: GameSession) -> void:
 	_session = session
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var dim: ColorRect = ColorRect.new()
-	dim.color = Color(0.0, 0.03, 0.06, 0.88)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(dim)
+	_dim = ColorRect.new()
+	_dim.color = Color(0.01, 0.03, 0.02, 0.72)
+	_dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_dim.gui_input.connect(_on_dim_input)
+	add_child(_dim)
+
+	_sheet = PanelContainer.new()
+	_sheet.theme_type_variation = &"Sheet"
+	_sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_sheet.anchor_top = 0.12
+	_sheet.offset_top = 0.0
+	add_child(_sheet)
+	var outer: VBoxContainer = UiKit.vbox(UiTokens.SPACE_2)
+	_sheet.add_child(outer)
+
+	var header: HBoxContainer = UiKit.hbox(UiTokens.SPACE_2)
+	outer.add_child(header)
+	var title: Label = UiKit.label(tr("SET_TITLE"), &"TitleLabel")
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	var close: FxButton = UiKit.icon_button(&"close", 72.0, UiTokens.ICON_SM)
+	close.pressed.connect(close_sheet)
+	header.add_child(close)
+
 	var scroll: ScrollContainer = UiKit.scroll()
-	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scroll.offset_left = 40.0
-	scroll.offset_right = -40.0
-	scroll.offset_top = 120.0
-	scroll.offset_bottom = -120.0
-	add_child(scroll)
-	var card: PanelContainer = UiKit.card()
-	scroll.add_child(card)
-	var box: VBoxContainer = UiKit.vbox(14)
-	card.add_child(box)
-	box.add_child(UiKit.label(tr("SET_TITLE"), &"HeadingLabel"))
+	outer.add_child(scroll)
+	var box: VBoxContainer = UiKit.vbox(UiTokens.SPACE_2)
+	scroll.add_child(box)
 
-	_add_toggle(box, "sound", "SET_SOUND_ON", "SET_SOUND_OFF", func() -> bool: return _session.settings.sound_on, func(v: bool) -> void: _session.settings.set_sound(v))
-	_add_toggle(box, "vibration", "SET_VIBRATION_ON", "SET_VIBRATION_OFF", func() -> bool: return _session.settings.vibration_on, func(v: bool) -> void: _session.settings.set_vibration(v))
-	_add_toggle(box, "motion", "SET_MOTION_REDUCED", "SET_MOTION_FULL", func() -> bool: return _session.settings.reduce_motion, func(v: bool) -> void: _session.settings.set_reduce_motion(v))
-	_add_toggle(box, "colorblind", "SET_COLORBLIND_ON", "SET_COLORBLIND_OFF", func() -> bool: return _session.settings.colorblind, func(v: bool) -> void: _session.settings.set_colorblind(v))
+	box.add_child(_make_language_row())
+	_add_toggle(box, "sound", &"sound_on", "SET_SOUND", "", func() -> bool: return _session.settings.sound_on, func(v: bool) -> void: _session.settings.set_sound(v))
+	_add_toggle(box, "vibration", &"vibration", "SET_VIBRATION", "", func() -> bool: return _session.settings.vibration_on, func(v: bool) -> void: _session.settings.set_vibration(v))
+	_add_toggle(box, "motion", &"motion", "SET_MOTION", "SET_MOTION_HINT", func() -> bool: return _session.settings.reduce_motion, func(v: bool) -> void: _session.settings.set_reduce_motion(v))
+	_add_toggle(box, "colorblind", &"eye", "SET_COLORBLIND", "SET_COLORBLIND_HINT", func() -> bool: return _session.settings.colorblind, func(v: bool) -> void: _session.settings.set_colorblind(v))
+	box.add_child(_make_size_row())
 
-	box.add_child(UiKit.label(tr("SET_TEXT_SIZE"), &"AccentLabel"))
-	var sizes: HBoxContainer = UiKit.hbox(10)
-	box.add_child(sizes)
-	for i: int in GameSettings.TEXT_SCALES.size():
-		var button: Button = UiKit.button(tr("SET_SIZE_%d" % i), &"TabButton", 80.0)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.pressed.connect(func() -> void: _session.settings.set_text_scale_index(i))
-		sizes.add_child(button)
-		_size_buttons.append(button)
+	var help: PanelContainer = UiKit.card("CardRaised")
+	var help_box: VBoxContainer = UiKit.vbox(UiTokens.SPACE_1)
+	help.add_child(help_box)
+	help_box.add_child(UiKit.icon_label(&"info", tr("SET_HELP_TITLE"), &"HeadingLabel", UiTokens.AQUA))
+	help_box.add_child(UiKit.label(tr("HELP_TEXT"), &"SmallLabel", true))
+	box.add_child(help)
 
-	box.add_child(UiKit.label(tr("SET_HELP_TITLE"), &"AccentLabel"))
-	box.add_child(UiKit.label(tr("HELP_TEXT"), &"SmallLabel", true))
-	var save: Button = UiKit.button(tr("SET_SAVE_NOW"), &"", 80.0)
+	var save: FxButton = UiKit.button(tr("SET_SAVE_NOW"), &"", UiTokens.TOUCH_MIN, &"check")
 	save.pressed.connect(_on_save)
 	box.add_child(save)
-	_reset_button = UiKit.button(tr("SET_RESET"), &"DangerButton", 80.0)
+	_reset_button = UiKit.button(tr("SET_RESET"), &"DangerButton", UiTokens.TOUCH_MIN, &"trash")
 	_reset_button.pressed.connect(_on_reset_pressed)
 	box.add_child(_reset_button)
-	_confirm_row = UiKit.hbox(10)
+	_confirm_row = UiKit.hbox(UiTokens.SPACE_1)
 	_confirm_row.visible = false
 	box.add_child(_confirm_row)
-	var yes: Button = UiKit.button(tr("SET_RESET_YES"), &"DangerButton", 80.0)
+	var yes: FxButton = UiKit.button(tr("SET_RESET_YES"), &"DangerButton", UiTokens.TOUCH_MIN)
 	yes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	yes.pressed.connect(_on_reset_confirmed)
 	_confirm_row.add_child(yes)
-	var no: Button = UiKit.button(tr("BTN_CANCEL"), &"", 80.0)
+	var no: FxButton = UiKit.button(tr("BTN_CANCEL"), &"", UiTokens.TOUCH_MIN)
 	no.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	no.pressed.connect(func() -> void: _confirm_row.visible = false)
 	_confirm_row.add_child(no)
-	var close: Button = UiKit.button(tr("BTN_CLOSE"), &"PrimaryButton", 90.0)
-	close.pressed.connect(func() -> void: closed.emit())
-	box.add_child(close)
+	box.add_child(UiKit.label(tr("SET_VERSION") % ProjectSettings.get_setting("application/config/version", "1.0"), &"OverlineLabel", false, HORIZONTAL_ALIGNMENT_CENTER))
 	_session.settings.changed.connect(refresh)
 	refresh()
 
 
+## Sayfayı açar (aşağıdan kayarak).
+func open() -> void:
+	refresh()
+	visible = true
+	_confirm_row.visible = false
+	if _tween != null:
+		_tween.kill()
+	_dim.modulate.a = 1.0
+	_slide(0.0)
+	if UiMotion.reduce_motion:
+		return
+	_dim.modulate.a = 0.0
+	_slide(size.y * 0.5)
+	_tween = create_tween()
+	_tween.set_parallel(true)
+	_tween.tween_property(_dim, "modulate:a", 1.0, UiTokens.DUR_BASE)
+	_tween.tween_method(_slide, size.y * 0.5, 0.0, UiTokens.DUR_SLOW).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+## Sayfayı dikeyde kaydırır (çıpaları bozmadan: üst ve alt ofset birlikte).
+func _slide(amount: float) -> void:
+	_sheet.offset_top = amount
+	_sheet.offset_bottom = amount
+
+
+## Sayfayı kapatır.
+func close() -> void:
+	close_sheet()
+
+
+func close_sheet() -> void:
+	visible = false
+	closed.emit()
+
+
+## Ad (`sound`, `vibration`, `motion`, `colorblind`) ile anahtar.
+func toggle(toggle_name: String) -> ToggleSwitch:
+	return _toggles[toggle_name] as ToggleSwitch
+
+
+func language_control() -> SegmentedControl:
+	return _language
+
+
+func size_control() -> SegmentedControl:
+	return _sizes
+
+
 func refresh() -> void:
-	for button_name: String in _toggles.keys():
-		var toggle: Button = _toggles[button_name] as Button
+	if _language == null:
+		return
+	for toggle_name: String in _toggles.keys():
+		var toggle: ToggleSwitch = _toggles[toggle_name] as ToggleSwitch
 		var getter: Callable = toggle.get_meta("getter") as Callable
-		var value: bool = getter.call() as bool
-		toggle.theme_type_variation = &"TabButtonActive" if value else &"TabButton"
-		toggle.text = tr(String(toggle.get_meta("key_on")) if value else String(toggle.get_meta("key_off")))
-	for i: int in _size_buttons.size():
-		_size_buttons[i].theme_type_variation = &"TabButtonActive" if i == _session.settings.text_scale_index else &"TabButton"
+		toggle.set_value(getter.call() as bool, true)
+	_language.set_selected(maxi(GameSettings.LANGUAGES.find(_session.settings.language), 0))
+	_sizes.set_selected(_session.settings.text_scale_index)
 
 
-func _add_toggle(box: VBoxContainer, key: String, key_on: String, key_off: String, getter: Callable, setter: Callable) -> void:
-	var button: Button = UiKit.button("", &"TabButton", 80.0)
-	button.set_meta("getter", getter)
-	button.set_meta("key_on", key_on)
-	button.set_meta("key_off", key_off)
-	button.pressed.connect(func() -> void: setter.call(not (getter.call() as bool)))
-	box.add_child(button)
-	_toggles[key] = button
+func _on_dim_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
+		close_sheet()
+
+
+func _make_language_row() -> Control:
+	var card: PanelContainer = UiKit.card()
+	var box: VBoxContainer = UiKit.vbox(UiTokens.SPACE_1)
+	card.add_child(box)
+	box.add_child(UiKit.icon_label(&"globe", tr("SET_LANGUAGE"), &"AccentLabel", UiTokens.ACCENT))
+	_language = SegmentedControl.new()
+	var names: Array[String] = []
+	for code: String in GameSettings.LANGUAGES:
+		names.append(Localization.name_of(code))
+	_language.setup(names)
+	_language.selected.connect(func(index: int) -> void: _session.settings.set_language(GameSettings.LANGUAGES[index]))
+	box.add_child(_language)
+	return card
+
+
+func _make_size_row() -> Control:
+	var card: PanelContainer = UiKit.card()
+	var box: VBoxContainer = UiKit.vbox(UiTokens.SPACE_1)
+	card.add_child(box)
+	box.add_child(UiKit.icon_label(&"text_size", tr("SET_TEXT_SIZE"), &"AccentLabel", UiTokens.ACCENT))
+	_sizes = SegmentedControl.new()
+	var names: Array[String] = []
+	for i: int in GameSettings.TEXT_SCALES.size():
+		names.append(tr("SET_SIZE_%d" % i))
+	_sizes.setup(names)
+	_sizes.selected.connect(func(index: int) -> void: _session.settings.set_text_scale_index(index))
+	box.add_child(_sizes)
+	return card
+
+
+## Bir ayar satırı: ikon + ad (+ açıklama) + anahtar. Satırın tamamına dokunmak anahtarı çevirir.
+func _add_toggle(box: VBoxContainer, key: String, icon_name: StringName, title_key: String, hint_key: String, getter: Callable, setter: Callable) -> void:
+	var card: PanelContainer = UiKit.card()
+	var row: HBoxContainer = UiKit.hbox(UiTokens.SPACE_2)
+	card.add_child(row)
+	row.add_child(UiKit.icon(icon_name, UiTokens.ICON_MD, UiTokens.ACCENT))
+	var texts: VBoxContainer = UiKit.vbox(2)
+	texts.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var title: Label = UiKit.label(tr(title_key), &"HeadingLabel", true)
+	title.add_theme_font_size_override("font_size", int(float(UiTokens.FONT_BASE) * 1.0))
+	texts.add_child(title)
+	if hint_key != "":
+		texts.add_child(UiKit.label(tr(hint_key), &"MutedLabel", true))
+	row.add_child(texts)
+	var toggle: ToggleSwitch = ToggleSwitch.new()
+	toggle.set_meta("getter", getter)
+	toggle.toggled.connect(func(v: bool) -> void: setter.call(v))
+	row.add_child(toggle)
+	card.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+			toggle.flip()
+	)
+	box.add_child(card)
+	_toggles[key] = toggle
 
 
 func _on_save() -> void:
@@ -112,4 +222,4 @@ func _on_reset_confirmed() -> void:
 	_confirm_row.visible = false
 	_session.reset_game()
 	SignalBus.toast_requested.emit("MSG_RESET_DONE", [])
-	closed.emit()
+	close_sheet()

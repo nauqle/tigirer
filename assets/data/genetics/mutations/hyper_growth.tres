@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"hyper_growth"
-display_name = "Hiper Büyüme"
+display_name = "MUT_HYPER_GROWTH"
 weight = 30
 growth_multiplier = 1.6
 water_multiplier = 1

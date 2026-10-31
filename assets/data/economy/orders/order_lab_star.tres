@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"order_lab_star"
-title = "Laboratuvar Siparişi: Yıldız Çiçek"
-customers = PackedStringArray("Dr. Nova", "Genetik Enstitüsü")
+title = "ORD_LAB_STAR_TITLE"
+customers = PackedStringArray("CUST_DR_NOVA", "CUST_GENETIK_ENSTITUSU")
 fruit_ids = Array[StringName]([&"flower_star"])
 mutation_id = &""
 min_unit_value = 0.0

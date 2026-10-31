@@ -5,7 +5,7 @@ extends Node
 ## Uygular: design/game-brief.md, FAZ 5 (dikey mobil arayüz, Seed-Dex, çevrimdışı kazanç): "çalıştır ve gözle" kanıtı.
 ##
 ## Komut satırı (godot ... -- seçenekler): --scenario=farm|market|lab|dex|upgrades|settings|offline|fresh, --seed=N,
-## --scale=0..3 (yazı boyutu), --colorblind, --reduce-motion.
+## --scale=0..3 (yazı boyutu), --lang=tr|en, --colorblind, --reduce-motion.
 ## Dev-only: kullanıcıya dönük metinler bilerek yerelleştirilmedi (src/ui kuralı bu klasörü kapsamaz).
 
 const MAIN_SCENE: PackedScene = preload("res://src/ui/main.tscn")
@@ -25,6 +25,7 @@ func _ready() -> void:
 	_main.production_mode = false
 	_main.save_path = SAVE_PATH
 	_main.rng_seed = int(options.get("seed", 5))
+	_main.language_override = String(options.get("lang", "tr"))
 	add_child(_main)
 	var settings: GameSettings = _main.session.settings
 	settings.set_text_scale_index(int(options.get("scale", 1)))
@@ -72,7 +73,7 @@ func _prepare(scenario: String) -> void:
 			session.buy_drone(0)
 			_main.open_tab(4)
 		"settings":
-			_main.settings_overlay().visible = true
+			_main.open_settings()
 		"offline":
 			session.buy_irrigation(0, 0)
 			session.buy_irrigation(0, 1)

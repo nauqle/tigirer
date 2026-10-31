@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"order_bulb_deli"
-title = "Gurme Siparişi: Yumru Meyve"
-customers = PackedStringArray("Şef Aras", "Lezzet Atölyesi")
+title = "ORD_BULB_DELI_TITLE"
+customers = PackedStringArray("CUST_SEF_ARAS", "CUST_LEZZET_ATOLYESI")
 fruit_ids = Array[StringName]([&"fruit_bulb"])
 mutation_id = &""
 min_unit_value = 0.0

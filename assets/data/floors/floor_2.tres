@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 index = 2
-display_name = "Üst Kat"
+display_name = "FLOOR_2"
 cols = 4
 rows = 3
 unlock_cost = 2600

@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"golden_week"
-headline = "Altın hafta"
-body = "Kuyumcular altın meyvelere prim ödüyor."
+headline = "EVT_GOLDEN_WEEK_HEAD"
+body = "EVT_GOLDEN_WEEK_BODY"
 scope = 2
 target_ids = Array[StringName]([&"golden"])
 price_multiplier = 1.5

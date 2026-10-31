@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 uid = "starter_vine_tulip"
-display_name = "Sarmaşık Lale"
+display_name = "SEED_VINE_TULIP"
 generation = 0
 parent_uids = PackedStringArray()
 stem_alleles = Array[StringName]([&"stem_vine", &"stem_vine"])

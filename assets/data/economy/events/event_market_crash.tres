@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"market_crash"
-headline = "Borsa sarsıldı"
-body = "Yatırımcılar panikte, her ürün ucuza gidiyor."
+headline = "EVT_MARKET_CRASH_HEAD"
+body = "EVT_MARKET_CRASH_BODY"
 scope = 0
 target_ids = Array[StringName]([])
 price_multiplier = 0.75

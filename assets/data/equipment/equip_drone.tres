@@ -6,8 +6,8 @@
 script = ExtResource("1_script")
 id = &"equip_drone"
 kind = 2
-display_name = "Hasat Dronu"
-description = "Olgun bitkileri kendiliğinden biçer ve aynı bitkiyi yeniden diker."
+display_name = "EQ_DRONE_NAME"
+description = "EQ_DRONE_DESC"
 cost = 500
 cost_growth = 1.7
 max_level = 4

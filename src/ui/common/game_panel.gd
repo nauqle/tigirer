@@ -5,6 +5,9 @@ extends Control
 ##
 ## Uygular: şablon UI kuralı: "UI must NEVER own or directly modify game state — display only, use commands/events".
 
+## Panel başka bir sekmeye geçilmesini ister (örn. "Geliştir'e git").
+signal tab_requested(index: int)
+
 var session: GameSession
 
 

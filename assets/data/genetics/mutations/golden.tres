@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"golden"
-display_name = "Altın"
+display_name = "MUT_GOLDEN"
 weight = 8
 growth_multiplier = 1
 water_multiplier = 1

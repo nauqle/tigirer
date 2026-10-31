@@ -1,139 +1,191 @@
 class_name UiTheme
 extends RefCounted
-## Arayüz teması: koyu siber palet, dokunmatik dostu büyük düğmeler, yazı boyutu ölçeği ve renk körlüğü paleti.
-## Tüm yazı boyutları tema tür varyasyonlarındandır (`HeadingLabel`, `BigLabel`, `SmallLabel` ...): yazı boyutu ayarı tek
-## yerden (ölçek çarpanı) uygulanır, panel kodu boyut sabitlemez.
+## Arayüz teması: `UiTokens` belirteçlerinden ve `UiFonts` yazı tiplerinden kurulur. Tüm yazı boyutu/renk/biçim TEMA TÜR
+## VARYASYONLARIYLA gelir (`TitleLabel`, `PrimaryButton`, `Card` ...): panel kodu boyut ya da renk sabitlemez; yazı boyutu ayarı
+## ve renk körlüğü paleti tek yerden uygulanır. Yüzeyler çizgiyle değil kademeyle ayrılır (bkz. design/design-language.md).
 ##
-## Uygular: design/game-brief.md, "Art & audio direction"; şablon kuralı: ölçeklenebilir yazı ve renk körlüğü kipi zorunlu.
+## Uygular: design/design-language.md; şablon kuralı: ölçeklenebilir yazı ve renk körlüğü kipi zorunlu.
 ##
 ## [codeblock]
 ## root_control.theme = UiTheme.build(settings.text_scale(), settings.colorblind)
-## label.theme_type_variation = &"HeadingLabel"
+## label.theme_type_variation = &"TitleLabel"
+## panel.theme_type_variation = &"Card"
 ## [/codeblock]
 
-const BASE_FONT_SIZE: int = 30
-## Sekme/üst çubuk düğmeleri yazı ölçeğinin yalnızca bu payını izler: beş sekme en büyük yazıda bile ekran genişliğine sığmalı.
+const BASE_FONT_SIZE: int = UiTokens.FONT_BASE
+## Alt gezinme çubuğu yazısı ölçeğin yalnızca bu payını izler: beş sekme en büyük yazıda bile ekran genişliğine sığmalı.
 const TAB_TEXT_SCALE_SHARE: float = 0.3
-const _PANEL: Color = Color(0.05, 0.10, 0.15, 0.92)
-const _PANEL_EDGE: Color = Color(0.16, 0.33, 0.42, 1.0)
-const _BUTTON: Color = Color(0.09, 0.19, 0.26, 1.0)
-const _BUTTON_HOVER: Color = Color(0.13, 0.27, 0.36, 1.0)
-const _BUTTON_PRESSED: Color = Color(0.06, 0.14, 0.2, 1.0)
-const _TEXT: Color = Color(0.88, 0.96, 0.94)
-const _MUTED: Color = Color(0.58, 0.72, 0.72)
 
 
-## Palet: normalde yeşil-turkuaz vurgu; renk körlüğü kipinde mavi-turuncu (kırmızı/yeşil ayrımına dayanmaz).
+## Palet: bkz. `UiTokens.palette`. (Eski çağrılar için burada da durur.)
 static func palette(colorblind: bool) -> Dictionary:
-	if colorblind:
-		return {
-			"accent": Color(0.38, 0.72, 1.0),
-			"good": Color(0.38, 0.72, 1.0),
-			"bad": Color(1.0, 0.66, 0.18),
-			"gold": Color(1.0, 0.9, 0.45),
-			"text": _TEXT,
-			"muted": _MUTED,
-		}
-	return {
-		"accent": Color(0.42, 1.0, 0.82),
-		"good": Color(0.5, 0.95, 0.55),
-		"bad": Color(1.0, 0.5, 0.42),
-		"gold": Color(1.0, 0.86, 0.35),
-		"text": _TEXT,
-		"muted": _MUTED,
-	}
+	return UiTokens.palette(colorblind)
 
 
 ## Verilen yazı ölçeği ve palet için tema kurar.
 static func build(text_scale: float, colorblind: bool) -> Theme:
-	var colors: Dictionary = palette(colorblind)
+	var colors: Dictionary = UiTokens.palette(colorblind)
 	var accent: Color = colors["accent"] as Color
+	var accent_dark: Color = colors["accent_dark"] as Color
+	var good: Color = colors["good"] as Color
+	var bad: Color = colors["bad"] as Color
+	var gold: Color = colors["gold"] as Color
+	var uv: Color = colors["uv"] as Color
+	var aqua: Color = colors["aqua"] as Color
 	var theme: Theme = Theme.new()
+	theme.default_font = UiFonts.body(UiTokens.WEIGHT_REGULAR)
 	theme.default_font_size = int(round(float(BASE_FONT_SIZE) * text_scale))
 
-	theme.set_color("font_color", "Label", _TEXT)
-	theme.set_stylebox("panel", "PanelContainer", _box(_PANEL, _PANEL_EDGE, 22, 2, 22))
-	theme.set_stylebox("panel", "Panel", _box(_PANEL, _PANEL_EDGE, 22, 2, 0))
+	# --- Etiketler
+	theme.set_color("font_color", "Label", UiTokens.TEXT)
+	_label(theme, "DisplayLabel", UiFonts.display(UiTokens.WEIGHT_DISPLAY), UiTokens.SCALE_DISPLAY, gold)
+	_label(theme, "TitleLabel", UiFonts.display(UiTokens.WEIGHT_BOLD), UiTokens.SCALE_TITLE, UiTokens.TEXT)
+	_label(theme, "HeadingLabel", UiFonts.display(UiTokens.WEIGHT_BOLD), UiTokens.SCALE_HEADING, UiTokens.TEXT)
+	_label(theme, "BigLabel", UiFonts.display(UiTokens.WEIGHT_DISPLAY), UiTokens.SCALE_DISPLAY * 0.85, gold)
+	_label(theme, "SmallLabel", UiFonts.body(UiTokens.WEIGHT_REGULAR), UiTokens.SCALE_SMALL, UiTokens.TEXT)
+	_label(theme, "MutedLabel", UiFonts.body(UiTokens.WEIGHT_REGULAR), UiTokens.SCALE_SMALL, UiTokens.TEXT_MUTED)
+	_label(theme, "OverlineLabel", UiFonts.overline(), UiTokens.SCALE_MICRO, UiTokens.TEXT_MUTED)
+	_label(theme, "AccentLabel", UiFonts.body(UiTokens.WEIGHT_BOLD), 1.0, accent)
+	_label(theme, "GoodLabel", UiFonts.body(UiTokens.WEIGHT_BOLD), 1.0, good)
+	_label(theme, "BadLabel", UiFonts.body(UiTokens.WEIGHT_BOLD), 1.0, bad)
+	_label(theme, "GoldLabel", UiFonts.display(UiTokens.WEIGHT_BOLD), 1.0, gold)
+	_label(theme, "UvLabel", UiFonts.body(UiTokens.WEIGHT_BOLD), 1.0, uv)
+	_label(theme, "AquaLabel", UiFonts.body(UiTokens.WEIGHT_BOLD), 1.0, aqua)
+	_label(theme, "NavLabel", UiFonts.body(UiTokens.WEIGHT_BOLD), UiTokens.SCALE_SMALL * (1.0 + (text_scale - 1.0) * TAB_TEXT_SCALE_SHARE) / maxf(text_scale, 0.01), UiTokens.TEXT_MUTED)
 
-	for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
-		var fill: Color = _BUTTON
-		var edge: Color = _PANEL_EDGE
-		match state:
-			"hover":
-				fill = _BUTTON_HOVER
-			"pressed":
-				fill = _BUTTON_PRESSED
-				edge = accent
-			"disabled":
-				fill = Color(0.07, 0.12, 0.16, 0.9)
-				edge = Color(0.12, 0.2, 0.26)
-		if state == "focus":
-			theme.set_stylebox(state, "Button", StyleBoxEmpty.new())
-		else:
-			theme.set_stylebox(state, "Button", _box(fill, edge, 20, 2, 22))
-	theme.set_color("font_color", "Button", _TEXT)
-	theme.set_color("font_hover_color", "Button", Color.WHITE)
-	theme.set_color("font_pressed_color", "Button", accent)
-	theme.set_color("font_disabled_color", "Button", Color(0.4, 0.5, 0.52))
-	theme.set_color("font_hover_pressed_color", "Button", accent)
+	# --- Düğmeler: ikincil (varsayılan), birincil, hayalet, tehlike, ikon, kart, gezinme
+	theme.set_font("font", "Button", UiFonts.body(UiTokens.WEIGHT_BOLD))
+	_button(theme, "Button", UiTokens.SURFACE_3, UiTokens.HAIRLINE, UiTokens.TEXT, UiTokens.TEXT, accent, 0.0)
+	_button(theme, "PrimaryButton", accent, Color(0, 0, 0, 0), accent_dark, accent_dark, accent_dark, 0.22, accent)
+	_button(theme, "GhostButton", Color(0, 0, 0, 0), Color(0, 0, 0, 0), UiTokens.TEXT_MUTED, UiTokens.TEXT, accent, 0.0)
+	_button(theme, "DangerButton", UiTokens.with_alpha(bad, 0.16), UiTokens.with_alpha(bad, 0.55), bad, UiTokens.TEXT, bad, 0.0)
+	_button(theme, "IconButton", UiTokens.SURFACE_2, UiTokens.HAIRLINE, UiTokens.TEXT, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_PILL, 18, 12)
+	_button(theme, "CardButton", UiTokens.SURFACE_2, UiTokens.HAIRLINE, UiTokens.TEXT, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 12, 12)
+	_button(theme, "BuyButton", UiTokens.with_alpha(accent, 0.10), UiTokens.with_alpha(accent, 0.6), accent, accent, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 18, 12)
+	_button(theme, "MutantButton", UiTokens.with_alpha(uv, 0.14), UiTokens.with_alpha(uv, 0.6), UiTokens.TEXT, UiTokens.TEXT, uv, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 12, 12)
+	_button(theme, "SegmentButton", Color(0, 0, 0, 0), Color(0, 0, 0, 0), UiTokens.TEXT_MUTED, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 14, 12)
+	_button(theme, "NavButton", Color(0, 0, 0, 0), Color(0, 0, 0, 0), UiTokens.TEXT_MUTED, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_LG, 6, 10)
+	# Seçili (basılı) durumlar: kart düğmesi ve gezinme ayrı bakar
+	_selected_style(theme, "CardButton", UiTokens.with_alpha(accent, 0.12), accent)
+	_selected_style(theme, "MutantButton", UiTokens.with_alpha(uv, 0.28), uv)
+	_selected_style(theme, "SegmentButton", UiTokens.with_alpha(accent, 0.18), accent)
+	_selected_style(theme, "NavButton", UiTokens.with_alpha(accent, 0.14), UiTokens.with_alpha(accent, 0.0))
+	# Eski adlar (geriye uyum): sekme düğmeleri
+	theme.set_type_variation("TabButton", "Button")
+	theme.set_type_variation("TabButtonActive", "PrimaryButton")
 
-	_variation(theme, "PrimaryButton", "Button", accent.darkened(0.55), accent, accent.lightened(0.5))
-	_variation(theme, "TabButton", "Button", Color(0.06, 0.12, 0.17), _PANEL_EDGE, _MUTED)
-	_variation(theme, "TabButtonActive", "Button", accent.darkened(0.62), accent, accent)
-	for tab_variation: StringName in [&"TabButton", &"TabButtonActive"]:
-		theme.set_font_size("font_size", tab_variation, int(round(float(BASE_FONT_SIZE) * (1.0 + (text_scale - 1.0) * TAB_TEXT_SCALE_SHARE))))
-	_variation(theme, "DangerButton", "Button", Color(0.35, 0.1, 0.1), Color(0.8, 0.3, 0.25), Color(1.0, 0.8, 0.75))
+	# --- Yüzeyler
+	theme.set_stylebox("panel", "PanelContainer", _box(UiTokens.SURFACE_1, UiTokens.HAIRLINE, 1, UiTokens.RADIUS_LG, 24, 20))
+	theme.set_stylebox("panel", "Panel", _box(UiTokens.SURFACE_1, UiTokens.HAIRLINE, 1, UiTokens.RADIUS_LG, 0, 0))
+	_panel(theme, "Card", _box(UiTokens.SURFACE_1, UiTokens.HAIRLINE, 1, UiTokens.RADIUS_LG, 24, 20))
+	_panel(theme, "CardRaised", _box(UiTokens.SURFACE_2, UiTokens.HAIRLINE_STRONG, 1, UiTokens.RADIUS_LG, 24, 20, Color(0, 0, 0, 0.45), 18, Vector2(0, 8)))
+	_panel(theme, "CardAccent", _box(UiTokens.with_alpha(accent, 0.1), UiTokens.with_alpha(accent, 0.5), 2, UiTokens.RADIUS_LG, 24, 20))
+	_panel(theme, "CardUv", _box(UiTokens.with_alpha(uv, 0.12), UiTokens.with_alpha(uv, 0.5), 2, UiTokens.RADIUS_LG, 24, 20))
+	_panel(theme, "CardWarn", _box(UiTokens.with_alpha(bad, 0.1), UiTokens.with_alpha(bad, 0.5), 2, UiTokens.RADIUS_LG, 24, 20))
+	_panel(theme, "Chip", _box(UiTokens.SURFACE_3, UiTokens.HAIRLINE, 1, UiTokens.RADIUS_PILL, 18, 8))
+	_panel(theme, "ChipGold", _box(UiTokens.with_alpha(gold, 0.14), UiTokens.with_alpha(gold, 0.45), 1, UiTokens.RADIUS_PILL, 18, 8))
+	_panel(theme, "ChipAccent", _box(UiTokens.with_alpha(accent, 0.14), UiTokens.with_alpha(accent, 0.45), 1, UiTokens.RADIUS_PILL, 18, 8))
+	_panel(theme, "Glass", _box(Color(0.04, 0.08, 0.07, 0.8), UiTokens.HAIRLINE_STRONG, 1, UiTokens.RADIUS_LG, 22, 14, Color(0, 0, 0, 0.4), 16, Vector2(0, 6)))
+	_panel(theme, "Toast", _box(UiTokens.SURFACE_3, UiTokens.HAIRLINE_STRONG, 1, UiTokens.RADIUS_PILL, 26, 14, Color(0, 0, 0, 0.5), 20, Vector2(0, 8)))
+	_panel(theme, "Sheet", _sheet_box(UiTokens.SURFACE_1, UiTokens.HAIRLINE_STRONG))
+	_panel(theme, "FloraBubble", _box(UiTokens.with_alpha(aqua, 0.1), UiTokens.with_alpha(aqua, 0.4), 1, UiTokens.RADIUS_LG, 20, 16))
 
-	_label_variation(theme, "HeadingLabel", 1.35, accent)
-	_label_variation(theme, "BigLabel", 1.7, colors["gold"] as Color)
-	_label_variation(theme, "SmallLabel", 0.8, _TEXT)
-	_label_variation(theme, "MutedLabel", 0.82, _MUTED)
-	_label_variation(theme, "AccentLabel", 1.0, accent)
-	_label_variation(theme, "GoodLabel", 1.0, colors["good"] as Color)
-	_label_variation(theme, "BadLabel", 1.0, colors["bad"] as Color)
-	_label_variation(theme, "GoldLabel", 1.0, colors["gold"] as Color)
+	# --- İlerleme çubukları
+	_progress(theme, "ProgressBar", accent)
+	_progress(theme, "UvProgress", uv)
+	_progress(theme, "SapProgress", gold)
+	_progress(theme, "AquaProgress", aqua)
 
-	theme.set_stylebox("background", "ProgressBar", _box(Color(0.04, 0.09, 0.13), Color(0.14, 0.3, 0.38), 13, 2, 0))
-	theme.set_stylebox("fill", "ProgressBar", _box(accent.darkened(0.1), accent, 13, 0, 0))
-	theme.set_constant("separation", "VBoxContainer", 14)
-	theme.set_constant("separation", "HBoxContainer", 14)
-	theme.set_constant("h_separation", "GridContainer", 14)
-	theme.set_constant("v_separation", "GridContainer", 14)
-	# Dokunmatik kaydırma çubukları: kalın ve belirgin
-	theme.set_stylebox("scroll", "VScrollBar", _box(Color(0.05, 0.1, 0.14, 0.6), Color(0, 0, 0, 0), 8, 0, 0))
-	theme.set_stylebox("grabber", "VScrollBar", _box(accent.darkened(0.3), Color(0, 0, 0, 0), 8, 0, 0))
-	theme.set_stylebox("grabber_highlight", "VScrollBar", _box(accent, Color(0, 0, 0, 0), 8, 0, 0))
-	theme.set_stylebox("grabber_pressed", "VScrollBar", _box(accent, Color(0, 0, 0, 0), 8, 0, 0))
+	# --- Düzen sabitleri ve dokunmatik kaydırma çubukları
+	theme.set_constant("separation", "VBoxContainer", UiTokens.SPACE_2)
+	theme.set_constant("separation", "HBoxContainer", UiTokens.SPACE_2)
+	theme.set_constant("h_separation", "GridContainer", UiTokens.SPACE_2)
+	theme.set_constant("v_separation", "GridContainer", UiTokens.SPACE_2)
+	var thin: StyleBoxFlat = _box(UiTokens.with_alpha(accent, 0.45), Color(0, 0, 0, 0), 0, UiTokens.RADIUS_PILL, 0, 0)
+	theme.set_stylebox("scroll", "VScrollBar", StyleBoxEmpty.new())
+	theme.set_stylebox("grabber", "VScrollBar", thin)
+	theme.set_stylebox("grabber_highlight", "VScrollBar", thin)
+	theme.set_stylebox("grabber_pressed", "VScrollBar", thin)
+	theme.set_stylebox("scroll", "HScrollBar", StyleBoxEmpty.new())
+	theme.set_stylebox("grabber", "HScrollBar", thin)
+	theme.set_stylebox("grabber_highlight", "HScrollBar", thin)
+	theme.set_stylebox("grabber_pressed", "HScrollBar", thin)
 	return theme
 
 
-static func _box(fill: Color, edge: Color, radius: int, border: int, margin: int) -> StyleBoxFlat:
+## Yuvarlak köşeli düz kutu; kenar, gölge ve iç boşluk isteğe bağlı.
+static func _box(fill: Color, edge: Color, border: int, radius: int, margin_x: int, margin_y: int, shadow: Color = Color(0, 0, 0, 0), shadow_size: int = 0, shadow_offset: Vector2 = Vector2.ZERO) -> StyleBoxFlat:
 	var box: StyleBoxFlat = StyleBoxFlat.new()
 	box.bg_color = fill
 	box.border_color = edge
 	box.set_border_width_all(border)
 	box.set_corner_radius_all(radius)
-	box.content_margin_left = float(margin)
-	box.content_margin_right = float(margin)
-	box.content_margin_top = float(maxi(margin * 2 / 3, 0))
-	box.content_margin_bottom = float(maxi(margin * 2 / 3, 0))
+	box.content_margin_left = float(margin_x)
+	box.content_margin_right = float(margin_x)
+	box.content_margin_top = float(margin_y)
+	box.content_margin_bottom = float(margin_y)
+	box.shadow_color = shadow
+	box.shadow_size = shadow_size
+	box.shadow_offset = shadow_offset
 	return box
 
 
-## Düğme türü varyasyonu: dolgu, kenar ve yazı rengi.
-static func _variation(theme: Theme, name: StringName, base: StringName, fill: Color, edge: Color, text: Color) -> void:
-	theme.set_type_variation(name, base)
-	theme.set_stylebox("normal", name, _box(fill, edge, 20, 3, 22))
-	theme.set_stylebox("hover", name, _box(fill.lightened(0.12), edge, 20, 3, 22))
-	theme.set_stylebox("pressed", name, _box(fill.darkened(0.2), edge, 20, 3, 22))
-	theme.set_stylebox("disabled", name, _box(fill.darkened(0.45), edge.darkened(0.5), 20, 2, 22))
-	theme.set_color("font_color", name, text)
-	theme.set_color("font_hover_color", name, Color.WHITE)
-	theme.set_color("font_pressed_color", name, text)
-	theme.set_color("font_disabled_color", name, Color(0.45, 0.52, 0.55))
+## Üst köşeleri yuvarlak alt sayfa (ayarlar, ayrıntı) kutusu.
+static func _sheet_box(fill: Color, edge: Color) -> StyleBoxFlat:
+	var box: StyleBoxFlat = _box(fill, edge, 1, UiTokens.RADIUS_XL, 32, 28, Color(0, 0, 0, 0.6), 30, Vector2(0, -6))
+	box.corner_radius_bottom_left = 0
+	box.corner_radius_bottom_right = 0
+	return box
 
 
-static func _label_variation(theme: Theme, name: StringName, size_factor: float, color: Color) -> void:
-	theme.set_type_variation(name, "Label")
-	theme.set_font_size("font_size", name, int(round(float(theme.default_font_size) * size_factor)))
-	theme.set_color("font_color", name, color)
+static func _panel(theme: Theme, variation: StringName, box: StyleBoxFlat) -> void:
+	theme.set_type_variation(variation, "PanelContainer")
+	theme.set_stylebox("panel", variation, box)
+
+
+static func _label(theme: Theme, variation: StringName, font: Font, size_factor: float, color: Color) -> void:
+	theme.set_type_variation(variation, "Label")
+	theme.set_font("font", variation, font)
+	theme.set_font_size("font_size", variation, int(round(float(theme.default_font_size) * size_factor)))
+	theme.set_color("font_color", variation, color)
+
+
+## Düğme türü: dolgu, kenar, yazı ve vurgu renkleri; `glow` > 0 ise vurgu rengiyle parıltı.
+static func _button(theme: Theme, variation: StringName, fill: Color, edge: Color, text: Color, text_hover: Color, accent: Color, glow: float, glow_color: Color = Color(0, 0, 0, 0), radius: int = UiTokens.RADIUS_MD, margin_x: int = 28, margin_y: int = 16) -> void:
+	if variation != "Button":
+		theme.set_type_variation(variation, "Button")
+	var glow_size: int = 16 if glow > 0.0 else 0
+	var glow_tint: Color = UiTokens.with_alpha(glow_color, glow)
+	theme.set_stylebox("normal", variation, _box(fill, edge, 1, radius, margin_x, margin_y, glow_tint, glow_size, Vector2(0, 4)))
+	theme.set_stylebox("hover", variation, _box(fill.lightened(0.08), edge, 1, radius, margin_x, margin_y, glow_tint, glow_size, Vector2(0, 4)))
+	theme.set_stylebox("pressed", variation, _box(fill.darkened(0.14), edge, 1, radius, margin_x, margin_y))
+	theme.set_stylebox("hover_pressed", variation, _box(fill.darkened(0.14), edge, 1, radius, margin_x, margin_y))
+	theme.set_stylebox("disabled", variation, _box(UiTokens.with_alpha(fill, fill.a * 0.35), UiTokens.with_alpha(edge, edge.a * 0.5), 1, radius, margin_x, margin_y))
+	theme.set_stylebox("focus", variation, StyleBoxEmpty.new())
+	theme.set_color("font_color", variation, text)
+	theme.set_color("font_hover_color", variation, text_hover)
+	theme.set_color("font_pressed_color", variation, text_hover)
+	theme.set_color("font_hover_pressed_color", variation, text_hover)
+	theme.set_color("font_disabled_color", variation, UiTokens.TEXT_DIM)
+	theme.set_color("icon_normal_color", variation, text)
+	theme.set_color("icon_hover_color", variation, text_hover)
+	theme.set_color("icon_pressed_color", variation, text_hover)
+	theme.set_color("icon_disabled_color", variation, UiTokens.TEXT_DIM)
+	theme.set_constant("h_separation", variation, UiTokens.SPACE_1)
+
+
+## Seçili (açık) durum: toggle düğmelerinin `pressed` stilleri vurgu renginde.
+static func _selected_style(theme: Theme, variation: StringName, fill: Color, edge: Color) -> void:
+	var normal: StyleBoxFlat = theme.get_stylebox("normal", variation) as StyleBoxFlat
+	var selected: StyleBoxFlat = _box(fill, edge, 2, normal.corner_radius_top_left, int(normal.content_margin_left), int(normal.content_margin_top))
+	theme.set_stylebox("pressed", variation, selected)
+	theme.set_stylebox("hover_pressed", variation, selected)
+	theme.set_color("font_pressed_color", variation, edge if edge.a > 0.5 else UiTokens.TEXT)
+	theme.set_color("font_hover_pressed_color", variation, edge if edge.a > 0.5 else UiTokens.TEXT)
+
+
+static func _progress(theme: Theme, variation: StringName, color: Color) -> void:
+	if variation != "ProgressBar":
+		theme.set_type_variation(variation, "ProgressBar")
+	theme.set_stylebox("background", variation, _box(UiTokens.SURFACE_3, Color(0, 0, 0, 0), 0, UiTokens.RADIUS_PILL, 0, 0))
+	theme.set_stylebox("fill", variation, _box(color, Color(0, 0, 0, 0), 0, UiTokens.RADIUS_PILL, 0, 0, UiTokens.with_alpha(color, 0.4), 8))

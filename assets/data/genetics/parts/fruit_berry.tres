@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = &"fruit_berry"
 layer = 2
-display_name = "Meyve Salkımı"
+display_name = "PART_FRUIT_BERRY"
 texture = ExtResource("2_texture")
 anchor = Vector2(64, 112)
 dominance = 3
