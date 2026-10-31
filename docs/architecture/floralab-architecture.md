@@ -364,13 +364,13 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
   görerek) doğrulandı: FAZ 1 (`PlantInstance` 35/35), FAZ 2 (38/38), FAZ 3–4 (5 sağ kalan yeni testlerle kapatıldı ve yeniden çalıştırılarak doğrulandı) ve FAZ 5 mantığı
   (`OfflineProgress`, `SeedDex`, `SaveManager`, `GameSettings`: 46 mutant; ilk turda 15 sağ kaldı, yeni testlerle 44'ü yakalandı). Kalan ikisi: `op_budget_carry_unbounded`
   EŞDEĞER mutanttır (`minf(budget, 1.0)` döngüden sonra zaten < 1 olan değeri değiştirmez); `sm_no_verify` (yazılan dosyayı geri okuyup doğrulama) dosya sistemi
-  hatası enjekte edilmeden sınanamaz ve savunma amaçlı bırakıldı. `GameSession` ve arayüz için sistematik mutasyon turu yapılmadı (`Main` entegrasyon testleri var).
+  hatası enjekte edilmeden sınanamaz ve savunma amaçlı bırakıldı. Cila turunun mantığı (`GoalService`, `MarketService` fiyat geçmişi, `AutomationService.cheapest_purchase_cost`, `GameSession.harvest_floor`, `UiFormat`) 25 mutantla denendi: ilk turda 13'ü yakalandı, 12'si sağ kaldı; 7'si gerçek test boşluğuydu ve yeni testlerle kapatıldı (hepsi yeniden koşularak doğrulandı), `g_current_first_done` sonsuz döngüye girip zaman aşımına uğradı (yakalanmış sayıldı). Kalan 4'ü eşdeğer ya da savunma amaçlı: `g_no_cap`, `g_load_no_clamp`, `g_progress_of_uncapped` (hedef sınırı üç katmanda uygulanıyor: yazma, yükleme, okuma; biri kalkınca diğer ikisi gözlenebilir davranışı aynı tutar) ve `m_history_not_detached` (Godot paketli dizileri yazmada kopyalar [COW], dönen dizi değiştirilse bile kaynak değişmez; `duplicate()` savunma amaçlı). `GameSession` geri kalanı ve arayüz için sistematik mutasyon turu yapılmadı (`Main` entegrasyon testleri var).
 - Görsel kanıt: `production/qa/evidence/` altında `faz1-plant-instance/`, `faz2-farm/`, `ui-polish/` (her birinde README ve `stamp.txt`). Yeniden üretmek için:
   `bash tools/capture_screenshot.sh <sahne.tscn> <çıkış.png> [--frames=N] -- <seçenekler>` (`CAPTURE_SIZE=1080x2400` ile uzun ekran),
   arayüz setinin tamamı (iki dil, üç boyut/ölçek, renk körlüğü, hareketi azalt) için `bash tools/capture_ui_evidence.sh`.
 - Ayrıştırma denetimi: şablonun `godot-parse-check.gd` betiği (`src/` ve `tests/` altındaki tüm betikler temiz).
-- Android: `godot --headless --export-release "Android Release" build/floralab-1.0.0.apk` (imza bilgisi `GODOT_ANDROID_KEYSTORE_RELEASE_*` ortam
-  değişkenlerinden; anahtar deposu depoda YOK). Denetim: `apksigner verify` (v2+v3 geçerli), `aapt2 dump badging` (paket `com.tigirer.floralab`, sürüm 1.0.0/1,
+- Android: `godot --headless --export-release "Android Release" build/floralab-1.1.0.apk` (imza bilgisi `GODOT_ANDROID_KEYSTORE_RELEASE_*` ortam
+  değişkenlerinden; anahtar deposu depoda YOK). Denetim: `apksigner verify` (v2+v3 geçerli), `aapt2 dump badging` (paket `com.tigirer.floralab`, sürüm 1.1.0/2,
   minSdk 24, arm64-v8a, izin yok, `debuggable` değil), paket içeriği (testler/geliştirici sahneleri yok, betikler derlenmiş, çeviri var) ve aynı ön ayardan `--export-pack`
   ile üretilen `.pck`'nın başsız açılıp 35 oyun saniyesi çalışması (şifreli otomatik kayıt yazıldı, hata yok). **Gerçek bir Android cihazda/emülatörde çalıştırma yapılmadı.**
 
