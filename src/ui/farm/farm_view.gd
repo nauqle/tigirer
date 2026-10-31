@@ -1,11 +1,13 @@
 class_name FarmView
 extends Control
-## Bir katın hidroponik ızgarasını çizer ve dokunuşu "niyet" sinyallerine çevirir. TileMapLayer zemini/boruları/lambaları,
-## PlantInstance bitkileri, PotOverlay göstergeleri ve hasat efektlerini taşır.
+## Bir katın 2.5D görünümü: `FarmStage` (3D sahne + perspektif kamera) bir `SubViewport` ile çizilir; üstünde 2D göstergeler (`PotOverlay`),
+## hasat efektleri ve kaydırma izi durur. Dokunuşu "niyet" sinyallerine çevirir: ekran noktası kameradan geçen ışınla oyun düzlemine
+## (z = 0, karo birimi) taşınır ve saksı/bitki dikdörtgenleriyle kesiştirilir.
 ## OYUN DURUMUNU DEĞİŞTİRMEZ: yalnızca `FarmService`'i okur; ekim/sulama/hasat isteklerini sinyalle bildirir,
 ## kararı ve değişikliği sahibi (GameSession) yapar. Sesi kendisi çalmaz (AudioService SignalBus'tan dinler).
 ##
-## Uygular: design/game-brief.md, FAZ 2 (hidroponik ızgara, kaydırarak toplu hasat, ASMR geri bildirimi).
+## Uygular: design/game-brief.md, FAZ 2 (hidroponik ızgara, kaydırarak toplu hasat, ASMR geri bildirimi);
+## docs/architecture/floralab-architecture.md, "2.5D çiftlik sahnesi" kararı.
 ##
 ## Dokunuş: kısa dokunuş = `pot_tapped`; parmağı sürükleme = kaydırma, değdiği olgun bitkiler için `harvest_requested`.
 ## [codeblock]
@@ -24,25 +26,24 @@ signal harvest_requested(floor_index: int, pot_index: int)
 ## Parmak kalktı, kaydırma bitti.
 signal swipe_ended
 
-const PLANT_SCENE: PackedScene = preload("res://src/gameplay/plants/plant_instance.tscn")
-## Saksı karosu içinde bitkinin tabanı (karonun sol üstüne göre).
-const POT_BASE: Vector2 = Vector2(90.0, 116.0)
-const PLANT_SCALE: float = 0.5
-## Kaydırmanın bitkiye "değdiği" dikdörtgenin yarım genişliği, tabanın üstü ve altı (ızgara uzayında piksel).
-const HIT_HALF_WIDTH: float = 62.0
-const HIT_ABOVE: float = 210.0
-const HIT_BELOW: float = 70.0
+## Kaydırmanın bitkiye "değdiği" dikdörtgenin yarım genişliği, tabanın üstü ve altı (karo; y yukarı).
+const HIT_HALF_WIDTH: float = 0.345
+const HIT_ABOVE: float = 1.17
+const HIT_BELOW: float = 0.39
+## Saksıya dokunma alanı: raf üstünden, saksı karosunun üstünün bu kadar (karo) yukarısına kadar.
+const POT_TAP_ABOVE_TILE_TOP: float = 0.52
+## Bitkinin gövde ortası: taban noktasının bu kadar (karo) üstü (efekt ve dokunuş hedefi).
+const PLANT_MID_HEIGHT: float = 0.39
 ## Dokunuşun kaydırma sayılması için gereken en az sürükleme (piksel).
 const TAP_SLOP: float = 16.0
-## Izgaranın iki yanındaki süs karoları (sütun sayısı).
-const MARGIN_TILES: int = 1
-const MAX_FIT_SCALE: float = 1.25
-## Izgaranın etrafındaki cam çerçeve boşluğu (piksel).
-const FRAME_PAD: float = 14.0
+## Efektlerin ve eski piksel sabitlerinin ölçeklendiği karo boyutu (piksel).
+const REFERENCE_TILE_PIXELS: float = 180.0
 const _TRAIL_SECONDS: float = 0.22
 const _TRAIL_MAX_POINTS: int = 28
+## Kat değiştirirken kameranın yandan süzülme mesafesi (karo).
+const FLOOR_DOLLY_TILES: float = 1.4
 
-## Hareketi azalt: salınım, parçacık ve iz kapanır (erişilebilirlik).
+## Hareketi azalt: salınım, kamera süzülmesi, parçacık ve iz kapanır (erişilebilirlik).
 var reduce_motion: bool = false:
 	set(value):
 		reduce_motion = value
@@ -58,13 +59,11 @@ var colorblind: bool = false:
 var _farm: FarmService
 var _ruleset: GeneticsRuleset
 var _floor_index: int = 0
-var _grid_root: Node2D
-var _tiles: TileMapLayer
+var _container: SubViewportContainer
+var _viewport: SubViewport
+var _stage: FarmStage
 var _overlay: PotOverlay
-var _drone_layer: DroneLayer
 var _drones: DroneService
-var _plants: Array[PlantInstance] = []
-var _tile_cache: PackedInt32Array = PackedInt32Array()
 var _fx_layer: Control
 var _trail: Line2D
 var _trail_times: PackedFloat32Array = PackedFloat32Array()
@@ -74,36 +73,49 @@ var _swiping: bool = false
 var _requested_pots: Dictionary = {}
 var _press_position: Vector2 = Vector2.ZERO
 var _last_position: Vector2 = Vector2.ZERO
+var _dolly_tween: Tween
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	clip_contents = true
-	_grid_root = Node2D.new()
-	add_child(_grid_root)
-	_tiles = TileMapLayer.new()
-	_tiles.tile_set = FarmTiles.make_tile_set()
-	_grid_root.add_child(_tiles)
+	_container = SubViewportContainer.new()
+	_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_container.stretch = true
+	_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_container)
+	_viewport = SubViewport.new()
+	_viewport.own_world_3d = true
+	_viewport.transparent_bg = true
+	_viewport.msaa_3d = Viewport.MSAA_2X
+	_viewport.handle_input_locally = false
+	_viewport.gui_disable_input = true
+	_container.add_child(_viewport)
+	_stage = FarmStage.new()
+	_viewport.add_child(_stage)
 	_overlay = PotOverlay.new()
 	_overlay.setup(self)
 	_overlay.palette = UiTokens.palette(colorblind)
-	_grid_root.add_child(_overlay)
-	_drone_layer = DroneLayer.new()
-	_grid_root.add_child(_drone_layer)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_overlay)
 	_fx_layer = Control.new()
 	_fx_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fx_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_fx_layer)
 	_trail = _make_trail()
 	_fx_layer.add_child(_trail)
-	resized.connect(_fit)
-	_fit()
+	resized.connect(_on_resized)
+	visibility_changed.connect(_on_visibility_changed)
+	_stage.set_view_size(size)
+	_apply_motion_setting()
 
 
 ## Çiftlik servisini ve kural setini bağlar; hasat efektleri için `harvested` sinyalini dinler.
 func setup(farm: FarmService, ruleset: GeneticsRuleset) -> void:
 	_farm = farm
 	_ruleset = ruleset
+	_stage.setup(ruleset)
 	_farm.harvested.connect(_on_harvested)
 	SignalBus.pot_watered.connect(_on_pot_watered)
 	SignalBus.plant_matured.connect(_on_plant_matured)
@@ -113,29 +125,34 @@ func setup(farm: FarmService, ruleset: GeneticsRuleset) -> void:
 ## Dron servisini bağlar: kattaki dronlar ve üs çizilir (salt okunur).
 func setup_drones(drone_service: DroneService) -> void:
 	_drones = drone_service
-	_drone_layer.dock = _drones.config.dock_position
 
 
-## Gösterilecek katı seçer ve ızgarayı yeniden kurar. `direction` (+1 sağa, -1 sola) verilirse yeni kat o yönden kayarak girer.
+## Gösterilecek katı seçer ve sahneyi yeniden kurar. `direction` (+1 sağa, -1 sola) verilirse yeni kat o yönden süzülerek girer.
 func show_floor(floor_index: int, direction: int = 0) -> void:
 	_floor_index = floor_index
-	_rebuild()
-	if direction != 0 and not reduce_motion and is_inside_tree():
-		var rest: Vector2 = _grid_root.position
-		_grid_root.position = rest + Vector2(float(direction) * 90.0, 0.0)
-		_grid_root.modulate.a = 0.0
-		var tween: Tween = create_tween()
-		tween.set_parallel(true)
-		tween.tween_property(_grid_root, "position", rest, UiTokens.DUR_BASE).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		tween.tween_property(_grid_root, "modulate:a", 1.0, UiTokens.DUR_BASE)
-
-
-## Günün karanlık oranı (0 gündüz, 1 gece): ızgaraya çok hafif bir ton verir; UV lambaları etkilenmez.
-func set_night(night: float) -> void:
-	if _grid_root == null:
+	var floor_state: FloorState = current_floor_state()
+	if floor_state == null:
 		return
-	var tone: Color = Color(1.0, 0.99, 0.94).lerp(Color(0.84, 0.9, 1.0), clampf(night, 0.0, 1.0))
-	_grid_root.modulate = Color(tone.r, tone.g, tone.b, _grid_root.modulate.a)
+	_stage.set_view_size(size)
+	_stage.build_floor(floor_state)
+	_stage.sync(floor_state, _farm.config, _agents(), _show_dock(), _dock())
+	if _dolly_tween != null:
+		_dolly_tween.kill()
+	_stage.set_dolly(0.0)
+	_overlay.modulate.a = 1.0
+	if direction != 0 and not reduce_motion and is_inside_tree():
+		_stage.set_dolly(-float(direction) * FLOOR_DOLLY_TILES)
+		_overlay.modulate.a = 0.0
+		_dolly_tween = create_tween()
+		_dolly_tween.set_parallel(true)
+		_dolly_tween.tween_method(_stage.set_dolly, -float(direction) * FLOOR_DOLLY_TILES, 0.0, UiTokens.DUR_BASE * 1.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_dolly_tween.tween_property(_overlay, "modulate:a", 1.0, UiTokens.DUR_BASE)
+
+
+## Günün karanlık oranı (0 gündüz, 1 gece): sahnenin ışığına ve tonuna yansır; UV lambaları etkilenmez.
+func set_night(night: float) -> void:
+	if _stage != null:
+		_stage.set_night(night)
 
 
 ## Gösterilen katın durumu (salt okunur kullanım); yoksa null.
@@ -150,110 +167,72 @@ func farm_config() -> FarmConfig:
 	return _farm.config
 
 
-## Saksı karosunun ızgara uzayındaki sol üst köşesi.
-func pot_origin(pot_index: int) -> Vector2:
-	var floor_state: FloorState = current_floor_state()
-	return Vector2(float(floor_state.col_of(pot_index) * FarmTiles.TILE_SIZE), float((2 * floor_state.row_of(pot_index) + 1) * FarmTiles.TILE_SIZE))
+## 3D sahne (test ve göstergeler için; durumu değiştirmeyin).
+func stage() -> FarmStage:
+	return _stage
 
 
-## Saksıdaki bitki tabanının bu denetimin yerel koordinatındaki yeri (efektler ve dron hedefleri için).
+## Saksıdaki bitki tabanının bu denetimin yerel (piksel) koordinatındaki yeri (efektler, göstergeler ve dron hedefleri için).
 func pot_local_position(pot_index: int) -> Vector2:
-	return _grid_root.position + (pot_origin(pot_index) + POT_BASE) * _grid_root.scale.x
+	return _stage.project(_stage.pot_base_world(pot_index))
 
 
-## Izgara kök düğümü (dron gibi ek katmanlar bunun altına eklenir).
-func grid_root() -> Node2D:
-	return _grid_root
+## Bitkinin gövde ortasının yerel koordinatı (hasat efekti ve dokunuş hedefi).
+func plant_center_local(pot_index: int) -> Vector2:
+	return _stage.project(_stage.pot_base_world(pot_index) + Vector3(0.0, PLANT_MID_HEIGHT, 0.0))
 
 
-func _process(_delta: float) -> void:
-	if _farm == null or current_floor_state() == null:
+## Düzlemde bir karonun ekrandaki piksel boyutu.
+func pixels_per_tile() -> float:
+	return _stage.pixels_per_tile()
+
+
+## Eski piksel sabitlerini (180 piksellik karoya göre yazılmış) ekran ölçeğine çeviren çarpan.
+func tile_scale() -> float:
+	return pixels_per_tile() / REFERENCE_TILE_PIXELS
+
+
+func _process(delta: float) -> void:
+	var floor_state: FloorState = current_floor_state()
+	if _farm == null or floor_state == null:
 		return
-	_sync_plants()
-	_sync_tiles()
+	_stage.advance(delta)
+	_stage.sync(floor_state, _farm.config, _agents(), _show_dock(), _dock())
 	_update_trail()
+	_overlay.queue_redraw()
+
+
+func _agents() -> Array[DroneAgent]:
+	var list: Array[DroneAgent] = []
 	if _drones != null:
-		_drone_layer.agents = _drones.agents_for_floor(_floor_index)
-		_drone_layer.show_dock = current_floor_state().drones > 0
+		list = _drones.agents_for_floor(_floor_index)
+	return list
 
 
-# ------------------------------------------------------------------ kurulum
+func _show_dock() -> bool:
+	return _drones != null and current_floor_state().drones > 0
 
 
-func _rebuild() -> void:
-	for plant: PlantInstance in _plants:
-		plant.queue_free()
-	_plants.clear()
-	_tiles.clear()
-	_tile_cache = PackedInt32Array()
-	var floor_state: FloorState = current_floor_state()
-	if floor_state == null:
-		return
-	for row: int in floor_state.rows:
-		for col: int in range(-MARGIN_TILES, floor_state.cols + MARGIN_TILES):
-			_tiles.set_cell(Vector2i(col, 2 * row), 0, FarmTiles.atlas_coords(FarmTiles.FLOOR))
-			if col < 0 or col >= floor_state.cols:
-				_tiles.set_cell(Vector2i(col, 2 * row + 1), 0, FarmTiles.atlas_coords(FarmTiles.FLOOR))
-	_tile_cache.resize(floor_state.pots.size() + floor_state.rows)
-	_tile_cache.fill(-1)
-	for pot_index: int in floor_state.pots.size():
-		var plant: PlantInstance = PLANT_SCENE.instantiate() as PlantInstance
-		plant.ruleset = _ruleset
-		plant.sway_enabled = not reduce_motion
-		plant.position = pot_origin(pot_index) + POT_BASE
-		plant.scale = Vector2.ONE * PLANT_SCALE
-		_grid_root.add_child(plant)
-		_plants.append(plant)
-	_grid_root.move_child(_overlay, _grid_root.get_child_count() - 1)
-	_grid_root.move_child(_drone_layer, _grid_root.get_child_count() - 1)
-	_fit()
-	_sync_tiles()
-	_sync_plants()
+func _dock() -> Vector2:
+	return _drones.config.dock_position if _drones != null else Vector2(-0.5, 0.2)
 
 
-func _fit() -> void:
-	if _grid_root == null:
-		return
-	var floor_state: FloorState = current_floor_state()
-	if floor_state == null:
-		return
-	var tile: float = float(FarmTiles.TILE_SIZE)
-	var grid_width: float = float(floor_state.cols + 2 * MARGIN_TILES) * tile
-	var grid_height: float = float(floor_state.rows * 2) * tile
-	var usable: Vector2 = size - Vector2.ONE * FRAME_PAD * 2.0
-	var fit_scale: float = minf(minf(usable.x / grid_width, usable.y / grid_height), MAX_FIT_SCALE)
-	fit_scale = maxf(fit_scale, 0.05)
-	_grid_root.scale = Vector2.ONE * fit_scale
-	_grid_root.position = Vector2((size.x - grid_width * fit_scale) * 0.5 + float(MARGIN_TILES) * tile * fit_scale, (size.y - grid_height * fit_scale) * 0.5)
-	queue_redraw()
+func _on_resized() -> void:
+	if _stage != null:
+		_stage.set_view_size(size)
 
 
-## Izgaranın etrafında cam çerçeve: koyu yarı saydam dolgu, ince parlak kenar, hafif gölge.
-func _draw() -> void:
-	if _grid_root == null or current_floor_state() == null:
-		return
-	var floor_state: FloorState = current_floor_state()
-	var tile: float = float(FarmTiles.TILE_SIZE) * _grid_root.scale.x
-	var width: float = float(floor_state.cols + 2 * MARGIN_TILES) * tile
-	var height: float = float(floor_state.rows * 2) * tile
-	var rect: Rect2 = Rect2(Vector2((size.x - width) * 0.5, _grid_root.position.y), Vector2(width, height)).grow(FRAME_PAD)
-	var frame: StyleBoxFlat = StyleBoxFlat.new()
-	frame.bg_color = UiTokens.with_alpha(UiTokens.SURFACE_1, 0.92)
-	frame.border_color = UiTokens.HAIRLINE_STRONG
-	frame.set_border_width_all(2)
-	frame.set_corner_radius_all(UiTokens.RADIUS_LG)
-	frame.shadow_color = Color(0, 0, 0, 0.45)
-	frame.shadow_size = 18
-	draw_style_box(frame, rect)
+func _on_visibility_changed() -> void:
+	if _stage != null and _stage.atlas() != null:
+		_stage.atlas().set_active(is_visible_in_tree())
+	set_process(is_visible_in_tree())
 
 
 func _apply_motion_setting() -> void:
-	for plant: PlantInstance in _plants:
-		plant.sway_enabled = not reduce_motion
+	if _stage != null:
+		_stage.reduce_motion = reduce_motion
 	if _trail != null:
 		_trail.visible = not reduce_motion
-	if _drone_layer != null:
-		_drone_layer.reduce_motion = reduce_motion
 
 
 func _make_trail() -> Line2D:
@@ -268,39 +247,6 @@ func _make_trail() -> Line2D:
 	curve.add_point(Vector2(1.0, 1.0))
 	line.width_curve = curve
 	return line
-
-
-# --------------------------------------------------------------- eşzamanlama
-
-
-func _sync_plants() -> void:
-	var floor_state: FloorState = current_floor_state()
-	for pot_index: int in mini(_plants.size(), floor_state.pots.size()):
-		var pot: PotState = floor_state.pots[pot_index]
-		var plant: PlantInstance = _plants[pot_index]
-		if plant.gene != pot.gene:
-			plant.gene = pot.gene
-		if absf(plant.growth - pot.growth) > 0.002 or (pot.is_empty() and plant.growth != 0.0):
-			plant.growth = pot.growth
-
-
-func _sync_tiles() -> void:
-	var floor_state: FloorState = current_floor_state()
-	var config: FarmConfig = _farm.config
-	var wet_level: float = config.water_growth_threshold + config.water_growth_ramp
-	for pot_index: int in floor_state.pots.size():
-		var row: int = floor_state.row_of(pot_index)
-		var wet: bool = floor_state.pots[pot_index].water > wet_level
-		var tile: int = FarmTiles.pot_tile(wet, floor_state.irrigation_rows[row])
-		if _tile_cache[pot_index] != tile:
-			_tile_cache[pot_index] = tile
-			_tiles.set_cell(Vector2i(floor_state.col_of(pot_index), 2 * row + 1), 0, FarmTiles.atlas_coords(tile))
-	for row: int in floor_state.rows:
-		var lamp_tile: int = FarmTiles.LAMP if floor_state.uv_rows[row] > 0 else FarmTiles.FLOOR
-		if _tile_cache[floor_state.pots.size() + row] != lamp_tile:
-			_tile_cache[floor_state.pots.size() + row] = lamp_tile
-			for col: int in floor_state.cols:
-				_tiles.set_cell(Vector2i(col, 2 * row), 0, FarmTiles.atlas_coords(lamp_tile))
 
 
 # ------------------------------------------------------------------- girdi
@@ -352,35 +298,35 @@ func _end_press(position_: Vector2) -> void:
 		_swiping = false
 		swipe_ended.emit()
 		return
-	var pot_index: int = _pot_at(_to_grid(position_))
+	var pot_index: int = _pot_at(_stage.plane_point(position_))
 	if pot_index >= 0:
 		pot_tapped.emit(_floor_index, pot_index)
 
 
-func _to_grid(local_position: Vector2) -> Vector2:
-	return (local_position - _grid_root.position) / _grid_root.scale.x
-
-
-## Izgara uzayındaki bir nokta hangi saksı sütununa ve satırına düşüyor? (karo + üstündeki bitki alanı); yoksa -1.
-func _pot_at(grid_position: Vector2) -> int:
+## Oyun düzlemindeki (karo birimi, y yukarı) bir nokta hangi saksıya düşüyor? (karo + üstündeki bitki alanı); yoksa -1.
+func _pot_at(plane: Vector2) -> int:
 	var floor_state: FloorState = current_floor_state()
-	var tile: float = float(FarmTiles.TILE_SIZE)
 	for pot_index: int in floor_state.pots.size():
-		var origin: Vector2 = pot_origin(pot_index)
-		if Rect2(origin.x, origin.y - HIT_ABOVE + POT_BASE.y, tile, HIT_ABOVE + tile - POT_BASE.y).has_point(grid_position):
+		var col: int = floor_state.col_of(pot_index)
+		var row: int = floor_state.row_of(pot_index)
+		var tile_top: float = -float(2 * row + 1)
+		var slab_top: float = -float(2 * row + 2)
+		var rect: Rect2 = Rect2(float(col), slab_top, 1.0, tile_top + POT_TAP_ABOVE_TILE_TOP - slab_top)
+		if rect.has_point(plane):
 			return pot_index
 	return -1
 
 
+## Bitkinin kaydırmayla "değdiği" dikdörtgen (düzlem uzayı: karo, y yukarı).
 func _plant_rect(pot_index: int) -> Rect2:
-	var base: Vector2 = pot_origin(pot_index) + POT_BASE
-	return Rect2(base.x - HIT_HALF_WIDTH, base.y - HIT_ABOVE, HIT_HALF_WIDTH * 2.0, HIT_ABOVE + HIT_BELOW)
+	var base: Vector3 = _stage.pot_base_world(pot_index)
+	return Rect2(base.x - HIT_HALF_WIDTH, base.y - HIT_BELOW, HIT_HALF_WIDTH * 2.0, HIT_ABOVE + HIT_BELOW)
 
 
 func _check_swipe_segment(from_local: Vector2, to_local: Vector2) -> void:
 	var floor_state: FloorState = current_floor_state()
-	var a: Vector2 = _to_grid(from_local)
-	var b: Vector2 = _to_grid(to_local)
+	var a: Vector2 = _stage.plane_point(from_local)
+	var b: Vector2 = _stage.plane_point(to_local)
 	for pot_index: int in floor_state.pots.size():
 		# Her olgun bitki, tek kaydırmada EN FAZLA BİR KEZ istenir: dinleyici reddederse (ör. depo dolu) aynı
 		# bitki parmak üstündeyken her harekette yeniden istenip arayüzü boğmaz.
@@ -419,7 +365,7 @@ func _update_trail() -> void:
 func _on_harvested(result: HarvestResult) -> void:
 	if result.floor_index != _floor_index or _floor_index < 0:
 		return
-	var at: Vector2 = pot_local_position(result.pot_index) + Vector2(0.0, -70.0) * _grid_root.scale.x
+	var at: Vector2 = plant_center_local(result.pot_index)
 	var color: Color = Color.from_hsv(result.phenotype.fruit_hue, 0.7, 1.0)
 	if not reduce_motion:
 		HarvestFx.burst(_fx_layer, at, color, 14 + mini(result.combo_step, 12) * 2)
@@ -433,17 +379,16 @@ func _on_harvested(result: HarvestResult) -> void:
 func _on_pot_watered(floor_index: int, pot_index: int) -> void:
 	if reduce_motion or floor_index != _floor_index or _fx_layer == null:
 		return
-	HarvestFx.water_splash(_fx_layer, pot_local_position(pot_index) + Vector2(0.0, -30.0) * _grid_root.scale.x)
+	HarvestFx.water_splash(_fx_layer, pot_local_position(pot_index) + Vector2(0.0, -30.0) * tile_scale())
 
 
 func _on_plant_matured(floor_index: int, pot_index: int) -> void:
 	if reduce_motion or floor_index != _floor_index or _fx_layer == null:
 		return
-	var at: Vector2 = pot_local_position(pot_index) + Vector2(0.0, -70.0) * _grid_root.scale.x
-	HarvestFx.ring(_fx_layer, at, UiTokens.palette(colorblind)["gold"] as Color, 80.0 * _grid_root.scale.x)
+	HarvestFx.ring(_fx_layer, plant_center_local(pot_index), UiTokens.palette(colorblind)["gold"] as Color, 80.0 * tile_scale())
 
 
 func _on_plant_planted(floor_index: int, pot_index: int) -> void:
 	if reduce_motion or floor_index != _floor_index or _fx_layer == null:
 		return
-	HarvestFx.ring(_fx_layer, pot_local_position(pot_index) + Vector2(0.0, -10.0) * _grid_root.scale.x, UiTokens.palette(colorblind)["good"] as Color, 46.0 * _grid_root.scale.x)
+	HarvestFx.ring(_fx_layer, pot_local_position(pot_index) + Vector2(0.0, -10.0) * tile_scale(), UiTokens.palette(colorblind)["good"] as Color, 46.0 * tile_scale())

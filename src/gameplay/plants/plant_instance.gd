@@ -87,6 +87,13 @@ const _PHASE_STEPS: int = 6283
 @export_range(0.5, 8.0, 0.1) var sway_seconds: float = 2.8
 
 @export_group("Halo")
+## Halo çizilsin mi. Bitkiler 3D sahneye ortak bir atlastan aktarıldığında kapatılır: toplamalı (additive) karışım saydam
+## arka plana yazılamaz; halo orada sahnede ayrı bir ışık bilboard'u olarak çizilir.
+@export var halo_enabled: bool = true:
+	set(value):
+		halo_enabled = value
+		if is_node_ready() and _phenotype != null:
+			_build_halo()
 ## Parlayan mutasyonun halosunun en yüksek saydamlığı.
 @export_range(0.0, 1.0, 0.01) var halo_alpha: float = 0.55
 ## Halonun boyutu (piksel).
@@ -129,6 +136,16 @@ func _ready() -> void:
 ## [/codeblock]
 func get_phenotype() -> PlantPhenotype:
 	return _phenotype
+
+
+## Meyvenin (ve halonun) bitki yerelindeki konumu (birim, y aşağı pozitif); büyümeyle yükselir. Parlama ışığını sahnede yerleştirmek içindir.
+## [codeblock]
+## var lift: float = -plant.fruit_offset().y
+## [/codeblock]
+func fruit_offset() -> Vector2:
+	if not is_node_ready():
+		return Vector2.ZERO
+	return _fruit.position
 
 
 ## Katmanları gen ve kural setinden yeniden kurar. Gen ya da kural seti değişince kendiliğinden çağrılır.
@@ -237,7 +254,7 @@ func _build_fruit(fruit_part: PlantPartDef, _stem_part: PlantPartDef) -> void:
 
 
 func _build_halo() -> void:
-	_halo.visible = _phenotype.is_luminous()
+	_halo.visible = halo_enabled and _phenotype.is_luminous()
 	var tint: Color = _phenotype.glow_color
 	tint.a = halo_alpha * clampf(_phenotype.glow_strength, 0.0, 1.0)
 	_halo.modulate = tint

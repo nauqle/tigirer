@@ -42,7 +42,7 @@ func _plant_mature(pot_index: int) -> void:
 
 ## Bitkinin gövde ortasına denk gelen yerel nokta.
 func _plant_center(pot_index: int) -> Vector2:
-	return _view.pot_local_position(pot_index) + Vector2(0.0, -70.0) * _view.grid_root().scale.x
+	return _view.plant_center_local(pot_index)
 
 
 func _press(position_: Vector2) -> void:
@@ -199,9 +199,12 @@ func test_plants_follow_the_farm_state_every_frame() -> void:
 
 	_view._process(0.016)
 
+	var atlas: PlantAtlas = _view.stage().atlas()
 	var found: int = 0
-	for child: Node in _view.grid_root().get_children():
-		if child is PlantInstance and (child as PlantInstance).gene != null:
+	for index: int in atlas.capacity():
+		var plant: PlantInstance = atlas.plant_at(index)
+		if plant.gene != null:
 			found += 1
-			assert_almost_eq((child as PlantInstance).growth, 0.5, 0.01, "bitki saksının büyümesini izler")
+			assert_eq(index, 2, "bitki dolu saksının hücresinde")
+			assert_almost_eq(plant.growth, 0.5, 0.01, "bitki saksının büyümesini izler")
 	assert_eq(found, 1, "yalnızca dolu saksıda bitki çizilir")

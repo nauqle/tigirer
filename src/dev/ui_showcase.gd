@@ -4,7 +4,7 @@ extends Node
 ##
 ## Uygular: design/game-brief.md, FAZ 5 (dikey mobil arayüz, Seed-Dex, çevrimdışı kazanç): "çalıştır ve gözle" kanıtı.
 ##
-## Komut satırı (godot ... -- seçenekler): --scenario=farm|market|lab|dex|upgrades|settings|offline|fresh|goals|intro|toasts, --seed=N,
+## Komut satırı (godot ... -- seçenekler): --scenario=farm|drones|day|market|lab|dex|upgrades|settings|offline|fresh|goals|intro|toasts, --seed=N,
 ## --scale=0..3 (yazı boyutu), --lang=tr|en, --colorblind, --reduce-motion.
 ## Dev-only: kullanıcıya dönük metinler bilerek yerelleştirilmedi (src/ui kuralı bu klasörü kapsamaz).
 
@@ -60,6 +60,28 @@ func _prepare(scenario: String) -> void:
 				floor_state.pots[i].growth = growth[i]
 			floor_state.pots[2].water = 0.1
 			session.tick(0.2)
+			_main.open_tab(0)
+		"drones":
+			session.buy_irrigation(0, 0)
+			session.buy_irrigation(0, 1)
+			session.buy_uv_lamp(0, 1)
+			session.buy_drone(0)
+			session.plant_all(0, REED)
+			session.plant_all(0, VINE)
+			var drone_floor: FloorState = session.farm.get_floor(0)
+			for i: int in drone_floor.pots.size():
+				drone_floor.pots[i].growth = 1.0 if i % 2 == 0 else 0.5
+			session.tick(1.5)
+			_main.open_tab(0)
+		"day":
+			session.buy_irrigation(0, 0)
+			session.buy_uv_lamp(0, 0)
+			session.plant_all(0, CARRIER)
+			var day_floor: FloorState = session.farm.get_floor(0)
+			var day_growth: Array[float] = [1.0, 0.8, 0.55, 0.3, 1.0, 0.0]
+			for i: int in day_floor.pots.size():
+				day_floor.pots[i].growth = day_growth[i]
+			session.time.game_seconds = 0.5 * session.catalog.farm_config.day_length_seconds
 			_main.open_tab(0)
 		"market":
 			_stock_produce(session)
