@@ -23,6 +23,12 @@ var _speed: FxButton
 var _reputation: Label
 var _news: Label
 var _news_icon: TextureRect
+var _news_row: HBoxContainer
+var _goal_chip: FxButton
+var _goal_icon: TextureRect
+var _goal_title: Label
+var _goal_count: Label
+var _goal_bar: ProgressBar
 var _float_layer: Control
 var _last_credits: int = -1
 var _colorblind: bool = false
@@ -76,17 +82,20 @@ func setup(session: GameSession) -> void:
 	_reputation.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	rep_row.add_child(_reputation)
 	bottom.add_child(rep_row)
-	var news_row: HBoxContainer = UiKit.hbox(UiTokens.SPACE_1)
+	_goal_chip = _make_goal_chip()
+	bottom.add_child(_goal_chip)
+
+	_news_row = UiKit.hbox(UiTokens.SPACE_1)
 	_news_icon = UiKit.icon(&"news", UiTokens.ICON_SM * 0.85, UiTokens.TEXT_MUTED)
-	news_row.add_child(_news_icon)
+	_news_row.add_child(_news_icon)
 	_news = UiKit.label("", &"SmallLabel")
 	_news.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_news.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_news.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_news.clip_text = true
 	_news.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	news_row.add_child(_news)
-	bottom.add_child(news_row)
+	_news_row.add_child(_news)
+	rows.add_child(_news_row)
 
 	_float_layer = Control.new()
 	_float_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -100,6 +109,8 @@ func setup(session: GameSession) -> void:
 	SignalBus.market_event_started.connect(_on_market_event)
 	SignalBus.market_event_ended.connect(_on_market_event)
 	SignalBus.game_reloaded.connect(refresh)
+	SignalBus.goals_changed.connect(_update_goal)
+	SignalBus.goal_completed.connect(_on_goal_completed)
 	refresh()
 
 
@@ -112,6 +123,7 @@ func refresh() -> void:
 	_on_day_changed(_session.time.day())
 	_on_speed_changed(_session.time.speed)
 	_update_news()
+	_update_goal()
 
 
 ## Renk körlüğü paleti (haber ikon/yazı renkleri).
@@ -201,3 +213,64 @@ func _update_news() -> void:
 		_news.add_theme_color_override("font_color", UiTokens.TEXT_MUTED)
 		_news_icon.texture = UiIcons.get_icon(&"news")
 		_news_icon.modulate = UiTokens.TEXT_MUTED
+		_news_row.visible = false
+		return
+	_news_row.visible = true
+
+
+## Etkin hedef çipi: bayrak + başlık + ilerleme sayısı, altında ince ilerleme çizgisi. Basınca hedef sayfası açılır.
+func _make_goal_chip() -> FxButton:
+	var chip: FxButton = UiKit.button("", &"ChipButton", 60.0)
+	chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var row: HBoxContainer = UiKit.hbox(UiTokens.SPACE_1)
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	row.offset_left = 16.0
+	row.offset_right = -16.0
+	row.offset_bottom = -6.0
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(row)
+	_goal_icon = UiKit.icon(&"flag", UiTokens.ICON_SM * 0.9, UiTokens.ACCENT)
+	_goal_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(_goal_icon)
+	_goal_title = UiKit.label("", &"SmallLabel")
+	_goal_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_goal_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_goal_title.clip_text = true
+	_goal_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	row.add_child(_goal_title)
+	_goal_count = UiKit.label("", &"MutedLabel")
+	_goal_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(_goal_count)
+	_goal_bar = ProgressBar.new()
+	_goal_bar.show_percentage = false
+	_goal_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_goal_bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_goal_bar.offset_left = 18.0
+	_goal_bar.offset_right = -18.0
+	_goal_bar.offset_top = -9.0
+	_goal_bar.offset_bottom = -4.0
+	chip.add_child(_goal_bar)
+	chip.pressed.connect(func() -> void: goal_requested.emit())
+	return chip
+
+
+func _update_goal() -> void:
+	if _session == null or _goal_chip == null:
+		return
+	var goal: GoalDef = _session.goals.current()
+	if goal == null:
+		_goal_icon.texture = UiIcons.get_icon(&"check")
+		_goal_title.text = tr("HUD_GOALS_DONE")
+		_goal_count.text = ""
+		_goal_bar.max_value = 1.0
+		_goal_bar.value = 1.0
+		return
+	_goal_icon.texture = UiIcons.get_icon(&"flag")
+	_goal_title.text = GoalText.title(goal)
+	_goal_count.text = "%s/%s" % [UiFormat.number(_session.goals.progress_of(goal)), UiFormat.number(goal.target)]
+	_goal_bar.max_value = float(goal.target)
+	_goal_bar.value = float(_session.goals.progress_of(goal))
+
+
+func _on_goal_completed(_goal_id: StringName, _reward: int) -> void:
+	UiMotion.bump(_goal_chip, 1.06)

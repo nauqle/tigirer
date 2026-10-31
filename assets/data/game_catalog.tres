@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="GameCatalog" load_steps=41 format=3]
+[gd_resource type="Resource" script_class="GameCatalog" load_steps=57 format=3]
 
 [ext_resource type="Script" path="res://src/gameplay/game/game_catalog.gd" id="1_script"]
 [ext_resource type="Script" path="res://src/gameplay/farm/floor_def.gd" id="s_floor"]
@@ -40,6 +40,22 @@
 [ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_vine_tulip.tres" id="seed_starter_vine_tulip"]
 [ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_bamboo_pod.tres" id="seed_starter_bamboo_pod"]
 [ext_resource type="Resource" path="res://assets/data/genetics/seeds/starter_cyber_carrier.tres" id="seed_starter_cyber_carrier"]
+[ext_resource type="Script" path="res://src/gameplay/goals/goal_def.gd" id="s_goal"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_first_harvest.tres" id="goal00"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_first_sale.tres" id="goal01"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_first_cross.tres" id="goal02"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_irrigation_online.tres" id="goal03"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_two_species.tres" id="goal04"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_first_order.tres" id="goal05"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_harvest_25.tres" id="goal06"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_mezzanine_open.tres" id="goal07"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_gear_up.tres" id="goal08"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_eight_species.tres" id="goal09"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_five_orders.tres" id="goal10"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_rich.tres" id="goal11"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_whole_tower.tres" id="goal12"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_harvest_200.tres" id="goal13"]
+[ext_resource type="Resource" path="res://assets/data/goals/goal_thirty_species.tres" id="goal14"]
 
 [resource]
 script = ExtResource("1_script")
@@ -53,3 +69,4 @@ market_events = Array[ExtResource("s_event")]([ExtResource("event00"), ExtResour
 order_templates = Array[ExtResource("s_order")]([ExtResource("order00"), ExtResource("order01"), ExtResource("order02"), ExtResource("order03"), ExtResource("order04"), ExtResource("order05"), ExtResource("order06"), ExtResource("order07"), ExtResource("order08")])
 starter_seeds = Array[ExtResource("s_gene")]([ExtResource("seed_starter_reed_berry"), ExtResource("seed_starter_vine_tulip"), ExtResource("seed_starter_bamboo_pod"), ExtResource("seed_starter_cyber_carrier")])
 starter_seed_counts = PackedInt32Array(3, 3, 3, 1)
+goals = Array[ExtResource("s_goal")]([ExtResource("goal00"), ExtResource("goal01"), ExtResource("goal02"), ExtResource("goal03"), ExtResource("goal04"), ExtResource("goal05"), ExtResource("goal06"), ExtResource("goal07"), ExtResource("goal08"), ExtResource("goal09"), ExtResource("goal10"), ExtResource("goal11"), ExtResource("goal12"), ExtResource("goal13"), ExtResource("goal14")])

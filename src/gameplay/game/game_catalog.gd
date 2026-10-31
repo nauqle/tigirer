@@ -20,6 +20,8 @@ extends Resource
 @export var equipment: Array[EquipmentDef] = []
 @export var market_events: Array[MarketEventDef] = []
 @export var order_templates: Array[OrderTemplateDef] = []
+## Sıralı hedef zinciri (oyuncuya her an tek hedef gösterilir).
+@export var goals: Array[GoalDef] = []
 ## Yeni oyunda envantere konan tohumlar ve adetleri (aynı sırada, aynı uzunlukta).
 @export var starter_seeds: Array[PlantGene] = []
 @export var starter_seed_counts: PackedInt32Array = PackedInt32Array()
@@ -45,6 +47,12 @@ func validate() -> PackedStringArray:
 	for gene: PlantGene in starter_seeds:
 		for issue: String in GeneticsEngine.validate(gene, ruleset):
 			problems.append("başlangıç tohumu %s: %s" % [gene.uid, issue])
+	var goal_ids: Array[StringName] = []
+	for goal: GoalDef in goals:
+		if goal == null or goal.id == &"" or goal_ids.has(goal.id):
+			problems.append("hedef kimliği boş ya da yinelenen")
+		else:
+			goal_ids.append(goal.id)
 	for issue: String in ruleset.validate():
 		problems.append("kural seti: " + issue)
 	return problems

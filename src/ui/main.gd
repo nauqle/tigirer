@@ -41,6 +41,8 @@ const _PHASE_REFRESH_SECONDS: float = 0.5
 @export var production_mode: bool = true
 ## >= 0 ise oyunun rastgeleliği tohumlanır (testler ve ekran görüntüleri); -1 = her seferinde farklı.
 @export var rng_seed: int = -1
+## Kapalıysa FLORA'nın açılış kartı hiç gösterilmez (testler ve ekran görüntüleri).
+@export var show_intro_card: bool = true
 ## Doluysa ("tr"/"en") dil seçimi bu olur ve kayıttaki/sistem dilini geçersiz kılar (testler ve ekran görüntüleri).
 @export var language_override: String = ""
 
@@ -55,6 +57,8 @@ var _hud: HudBar
 var _audio: AudioService
 var _toasts: ToastLayer
 var _settings: SettingsOverlay
+var _goals: GoalsOverlay
+var _intro: IntroOverlay
 var _offline: OfflinePopup
 var _safe_area: MarginContainer
 var _last_back_press: float = -100.0
@@ -100,6 +104,7 @@ func _ready() -> void:
 	_update_time_of_day()
 	if session.last_offline_report != null and session.last_offline_report.has_news():
 		_offline.show_report(session.last_offline_report)
+	_show_intro_if_new()
 
 
 func _process(delta: float) -> void:
@@ -138,9 +143,17 @@ func _build_ui() -> void:
 	_settings.visible = false
 	_settings.closed.connect(func() -> void: _settings.visible = false)
 	_ui.add_child(_settings)
+	_goals = GoalsOverlay.new()
+	_goals.setup(session)
+	_goals.closed.connect(func() -> void: _goals.visible = false)
+	_ui.add_child(_goals)
+	_hud.goal_requested.connect(open_goals)
 	_offline = OfflinePopup.new()
 	_offline.setup()
 	_ui.add_child(_offline)
+	_intro = IntroOverlay.new()
+	_intro.setup(session.settings)
+	_ui.add_child(_intro)
 
 
 func _build_layout() -> void:
@@ -179,6 +192,7 @@ func _build_layout() -> void:
 func _rebuild_ui() -> void:
 	var keep_tab: int = _active_tab
 	var settings_open: bool = _settings != null and _settings.visible
+	var goals_open: bool = _goals != null and _goals.visible
 	_ui.queue_free()
 	_ui = null
 	_build_ui()
@@ -188,6 +202,8 @@ func _rebuild_ui() -> void:
 	_update_time_of_day()
 	if settings_open:
 		_settings.visible = true
+	if goals_open:
+		_goals.visible = true
 
 
 # ------------------------------------------------------------------ ayarlar
@@ -256,6 +272,8 @@ func _update_time_of_day() -> void:
 	var phase: float = session.time.day_progress()
 	_backdrop.set_phase(phase)
 	_hud.set_time_of_day(phase)
+	for panel_node: GamePanel in _panels:
+		panel_node.set_time_of_day(phase)
 
 
 # ------------------------------------------------------------------ sekmeler
@@ -308,9 +326,29 @@ func settings_overlay() -> SettingsOverlay:
 	return _settings
 
 
+func goals_overlay() -> GoalsOverlay:
+	return _goals
+
+
+func intro_overlay() -> IntroOverlay:
+	return _intro
+
+
 ## Ayarlar sayfasını açar.
 func open_settings() -> void:
 	_settings.open()
+
+
+## Hedefler sayfasını açar.
+func open_goals() -> void:
+	_goals.open()
+
+
+## FLORA'nın açılış kartı: ilk açılışta (ve çevrimdışı özet açık değilken) bir kez gösterilir.
+func _show_intro_if_new() -> void:
+	if not show_intro_card or session.settings.intro_seen or _offline.visible:
+		return
+	_intro.show_intro()
 
 
 # ------------------------------------------------------------------ rozetler
@@ -406,8 +444,12 @@ func _notification(what: int) -> void:
 
 ## Android geri tuşu: önce açık pencereyi kapatır, sonra Çiftlik sekmesine döner, son olarak çift basışla çıkar.
 func _on_back_pressed() -> void:
-	if _settings != null and _settings.visible:
+	if _intro != null and _intro.visible:
+		_intro.close()
+	elif _settings != null and _settings.visible:
 		_settings.close()
+	elif _goals != null and _goals.visible:
+		_goals.close()
 	elif _offline != null and _offline.visible:
 		_offline.close()
 	elif _active_tab != _TAB_FARM:

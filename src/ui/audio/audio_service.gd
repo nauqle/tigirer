@@ -46,6 +46,7 @@ func _ready() -> void:
 	SignalBus.floor_unlocked.connect(_on_floor_unlocked)
 	SignalBus.dex_discovery.connect(_on_dex_discovery)
 	SignalBus.toast_requested.connect(_on_toast_requested)
+	SignalBus.goal_completed.connect(_on_goal_completed)
 
 
 ## Bir efekti çalar. `pitch`: 1.0 = özgün perde.
@@ -102,6 +103,10 @@ func _on_floor_unlocked(_floor_index: int) -> void:
 
 func _on_dex_discovery(_morph_id: StringName, new_species: bool, _bonus: int) -> void:
 	play(SfxBank.Id.MUTATION if new_species else SfxBank.Id.MATURE)
+
+
+func _on_goal_completed(_goal_id: StringName, _reward: int) -> void:
+	play(SfxBank.Id.ORDER)
 
 
 ## Hata bildirimleri alçak "olmaz" sesi çıkarır.

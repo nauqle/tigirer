@@ -118,6 +118,9 @@ func test_game_data_text_keys_resolve_in_both_languages() -> void:
 	for event_def: MarketEventDef in catalog.market_events:
 		keys.append(event_def.headline)
 		keys.append(event_def.body)
+	for goal: GoalDef in catalog.goals:
+		keys.append(GoalText.title_key(goal))
+		keys.append(GoalText.description_key(goal))
 	for template: OrderTemplateDef in catalog.order_templates:
 		keys.append(template.title)
 		for customer: String in template.customers:

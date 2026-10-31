@@ -37,15 +37,23 @@ const TAP_SLOP: float = 16.0
 ## Izgaranın iki yanındaki süs karoları (sütun sayısı).
 const MARGIN_TILES: int = 1
 const MAX_FIT_SCALE: float = 1.25
+## Izgaranın etrafındaki cam çerçeve boşluğu (piksel).
+const FRAME_PAD: float = 14.0
 const _TRAIL_SECONDS: float = 0.22
 const _TRAIL_MAX_POINTS: int = 28
-const _GOLD: Color = Color(1.0, 0.86, 0.35)
 
 ## Hareketi azalt: salınım, parçacık ve iz kapanır (erişilebilirlik).
 var reduce_motion: bool = false:
 	set(value):
 		reduce_motion = value
 		_apply_motion_setting()
+
+## Renk körlüğü paleti (göstergeler için).
+var colorblind: bool = false:
+	set(value):
+		colorblind = value
+		if _overlay != null:
+			_overlay.palette = UiTokens.palette(value)
 
 var _farm: FarmService
 var _ruleset: GeneticsRuleset
@@ -78,6 +86,7 @@ func _ready() -> void:
 	_grid_root.add_child(_tiles)
 	_overlay = PotOverlay.new()
 	_overlay.setup(self)
+	_overlay.palette = UiTokens.palette(colorblind)
 	_grid_root.add_child(_overlay)
 	_drone_layer = DroneLayer.new()
 	_grid_root.add_child(_drone_layer)
@@ -96,6 +105,9 @@ func setup(farm: FarmService, ruleset: GeneticsRuleset) -> void:
 	_farm = farm
 	_ruleset = ruleset
 	_farm.harvested.connect(_on_harvested)
+	SignalBus.pot_watered.connect(_on_pot_watered)
+	SignalBus.plant_matured.connect(_on_plant_matured)
+	SignalBus.plant_planted.connect(_on_plant_planted)
 
 
 ## Dron servisini bağlar: kattaki dronlar ve üs çizilir (salt okunur).
@@ -104,10 +116,26 @@ func setup_drones(drone_service: DroneService) -> void:
 	_drone_layer.dock = _drones.config.dock_position
 
 
-## Gösterilecek katı seçer ve ızgarayı yeniden kurar.
-func show_floor(floor_index: int) -> void:
+## Gösterilecek katı seçer ve ızgarayı yeniden kurar. `direction` (+1 sağa, -1 sola) verilirse yeni kat o yönden kayarak girer.
+func show_floor(floor_index: int, direction: int = 0) -> void:
 	_floor_index = floor_index
 	_rebuild()
+	if direction != 0 and not reduce_motion and is_inside_tree():
+		var rest: Vector2 = _grid_root.position
+		_grid_root.position = rest + Vector2(float(direction) * 90.0, 0.0)
+		_grid_root.modulate.a = 0.0
+		var tween: Tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(_grid_root, "position", rest, UiTokens.DUR_BASE).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_grid_root, "modulate:a", 1.0, UiTokens.DUR_BASE)
+
+
+## Günün karanlık oranı (0 gündüz, 1 gece): ızgaraya çok hafif bir ton verir; UV lambaları etkilenmez.
+func set_night(night: float) -> void:
+	if _grid_root == null:
+		return
+	var tone: Color = Color(1.0, 0.99, 0.94).lerp(Color(0.84, 0.9, 1.0), clampf(night, 0.0, 1.0))
+	_grid_root.modulate = Color(tone.r, tone.g, tone.b, _grid_root.modulate.a)
 
 
 ## Gösterilen katın durumu (salt okunur kullanım); yoksa null.
@@ -192,10 +220,31 @@ func _fit() -> void:
 	var tile: float = float(FarmTiles.TILE_SIZE)
 	var grid_width: float = float(floor_state.cols + 2 * MARGIN_TILES) * tile
 	var grid_height: float = float(floor_state.rows * 2) * tile
-	var fit_scale: float = minf(minf(size.x / grid_width, size.y / grid_height), MAX_FIT_SCALE)
+	var usable: Vector2 = size - Vector2.ONE * FRAME_PAD * 2.0
+	var fit_scale: float = minf(minf(usable.x / grid_width, usable.y / grid_height), MAX_FIT_SCALE)
 	fit_scale = maxf(fit_scale, 0.05)
 	_grid_root.scale = Vector2.ONE * fit_scale
 	_grid_root.position = Vector2((size.x - grid_width * fit_scale) * 0.5 + float(MARGIN_TILES) * tile * fit_scale, (size.y - grid_height * fit_scale) * 0.5)
+	queue_redraw()
+
+
+## Izgaranın etrafında cam çerçeve: koyu yarı saydam dolgu, ince parlak kenar, hafif gölge.
+func _draw() -> void:
+	if _grid_root == null or current_floor_state() == null:
+		return
+	var floor_state: FloorState = current_floor_state()
+	var tile: float = float(FarmTiles.TILE_SIZE) * _grid_root.scale.x
+	var width: float = float(floor_state.cols + 2 * MARGIN_TILES) * tile
+	var height: float = float(floor_state.rows * 2) * tile
+	var rect: Rect2 = Rect2(Vector2((size.x - width) * 0.5, _grid_root.position.y), Vector2(width, height)).grow(FRAME_PAD)
+	var frame: StyleBoxFlat = StyleBoxFlat.new()
+	frame.bg_color = UiTokens.with_alpha(UiTokens.SURFACE_1, 0.92)
+	frame.border_color = UiTokens.HAIRLINE_STRONG
+	frame.set_border_width_all(2)
+	frame.set_corner_radius_all(UiTokens.RADIUS_LG)
+	frame.shadow_color = Color(0, 0, 0, 0.45)
+	frame.shadow_size = 18
+	draw_style_box(frame, rect)
 
 
 func _apply_motion_setting() -> void:
@@ -374,6 +423,27 @@ func _on_harvested(result: HarvestResult) -> void:
 	var color: Color = Color.from_hsv(result.phenotype.fruit_hue, 0.7, 1.0)
 	if not reduce_motion:
 		HarvestFx.burst(_fx_layer, at, color, 14 + mini(result.combo_step, 12) * 2)
-	HarvestFx.floating_text(_fx_layer, "+%d" % int(round(result.total_value())), at, _GOLD, 44, reduce_motion)
+	HarvestFx.floating_text(_fx_layer, "+%s" % UiFormat.number(int(round(result.total_value()))), at, UiTokens.palette(colorblind)["gold"] as Color, 44, reduce_motion)
+	if not reduce_motion:
+		HarvestFx.fly_coins(_fx_layer, at, Vector2(120.0, -230.0), clampi(int(result.total_value() / 12.0), 1, 4))
 	if result.combo_step >= 1:
-		HarvestFx.floating_text(_fx_layer, tr("FX_COMBO") % (result.combo_step + 1), at + Vector2(0.0, -52.0), Color(0.6, 1.0, 0.9), 34, reduce_motion)
+		HarvestFx.floating_text(_fx_layer, tr("FX_COMBO") % (result.combo_step + 1), at + Vector2(0.0, -52.0), UiTokens.palette(colorblind)["aqua"] as Color, 34, reduce_motion)
+
+
+func _on_pot_watered(floor_index: int, pot_index: int) -> void:
+	if reduce_motion or floor_index != _floor_index or _fx_layer == null:
+		return
+	HarvestFx.water_splash(_fx_layer, pot_local_position(pot_index) + Vector2(0.0, -30.0) * _grid_root.scale.x)
+
+
+func _on_plant_matured(floor_index: int, pot_index: int) -> void:
+	if reduce_motion or floor_index != _floor_index or _fx_layer == null:
+		return
+	var at: Vector2 = pot_local_position(pot_index) + Vector2(0.0, -70.0) * _grid_root.scale.x
+	HarvestFx.ring(_fx_layer, at, UiTokens.palette(colorblind)["gold"] as Color, 80.0 * _grid_root.scale.x)
+
+
+func _on_plant_planted(floor_index: int, pot_index: int) -> void:
+	if reduce_motion or floor_index != _floor_index or _fx_layer == null:
+		return
+	HarvestFx.ring(_fx_layer, pot_local_position(pot_index) + Vector2(0.0, -10.0) * _grid_root.scale.x, UiTokens.palette(colorblind)["good"] as Color, 46.0 * _grid_root.scale.x)

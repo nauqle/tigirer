@@ -31,6 +31,7 @@ var breeding: BreedingService = BreedingService.new()
 var automation: AutomationService = AutomationService.new()
 var drones: DroneService = DroneService.new()
 var dex: SeedDex = SeedDex.new()
+var goals: GoalService = GoalService.new()
 var settings: GameSettings = GameSettings.new()
 var saves: SaveManager = SaveManager.new()
 ## Son çevrimdışı ilerleme özeti (yoksa null).
@@ -168,6 +169,7 @@ func export_state() -> Dictionary:
 		"orders": orders.to_dict(),
 		"automation": automation.to_dict(),
 		"dex": dex.to_dict(),
+		"goals": goals.to_dict(),
 		"settings": settings.to_dict(),
 	}
 
@@ -192,6 +194,8 @@ func import_state(data: Dictionary) -> void:
 	orders.load_dict(data.get("orders", {}) as Dictionary)
 	automation.load_dict(data.get("automation", {}) as Dictionary)
 	dex.load_dict(data.get("dex", {}) as Dictionary)
+	goals.load_dict(data.get("goals", {}) as Dictionary)
+	goals.note_credits(wallet.credits)
 	settings.load_dict(data.get("settings", {}) as Dictionary)
 
 
@@ -240,6 +244,8 @@ func _init_fresh_state() -> void:
 		var gene: PlantGene = catalog.starter_seeds[i]
 		inventory.add_seed(gene, catalog.starter_seed_counts[i])
 		dex.record(gene, GeneticsEngine.express(gene, catalog.ruleset), 1)
+	goals.setup(catalog.goals, wallet)
+	goals.note_credits(wallet.credits)
 	_swipe_combo = 0
 	_swipe_value = 0.0
 
@@ -270,6 +276,13 @@ func _wire_signals() -> void:
 	breeding.bred.connect(SignalBus.seed_crossbred.emit)
 	breeding.mutation_found.connect(SignalBus.mutation_discovered.emit)
 	time.day_changed.connect(SignalBus.day_changed.emit)
+	goals.completed.connect(SignalBus.goal_completed.emit)
+	goals.changed.connect(SignalBus.goals_changed.emit)
+	wallet.credits_changed.connect(goals.note_credits)
+	market.sold.connect(_on_sold)
+	orders.order_completed.connect(_on_order_completed)
+	automation.purchased.connect(_on_purchased)
+	automation.floor_unlocked.connect(_on_floor_unlocked)
 
 
 ## Her hasat (elle, kaydırarak ya da dronla) ürünü ve dönen tohumu envantere koyar, Seed-Dex'e işler.
@@ -277,7 +290,27 @@ func _on_harvested(result: HarvestResult) -> void:
 	inventory.add_produce(result)
 	if result.seeds_returned > 0:
 		inventory.add_seed(result.gene, result.seeds_returned)
-	dex.record(result.gene, result.phenotype, time.day())
+	var found: SeedDex.Discovery = dex.record(result.gene, result.phenotype, time.day())
+	goals.note(GoalDef.Kind.HARVEST, 1)
+	if found.new_species:
+		goals.note(GoalDef.Kind.DISCOVER_SPECIES, 1)
+
+
+## Hedef beslemeleri: satış geliri, teslim edilen sipariş, donanım ve kat alımı.
+func _on_sold(_signature: StringName, _quantity: int, credits: int) -> void:
+	goals.note(GoalDef.Kind.SELL_CREDITS, credits)
+
+
+func _on_order_completed(_order: Order) -> void:
+	goals.note(GoalDef.Kind.DELIVER_ORDERS, 1)
+
+
+func _on_purchased(_kind: EquipmentDef.Kind, _floor_index: int, _target: int, _level: int) -> void:
+	goals.note(GoalDef.Kind.BUY_EQUIPMENT, 1)
+
+
+func _on_floor_unlocked(_floor_index: int) -> void:
+	goals.note(GoalDef.Kind.UNLOCK_FLOOR, 1)
 
 
 # ------------------------------------------------------------------ komutlar
@@ -407,11 +440,13 @@ func crossbreed(uid_a: String, uid_b: String) -> CommandResult:
 		var bonus: int = 0
 		if found.new_species:
 			bonus = catalog.economy_config.discovery_bonus_species
+			goals.note(GoalDef.Kind.DISCOVER_SPECIES, 1)
 		elif found.new_variant:
 			bonus = catalog.economy_config.discovery_bonus_variant
 		if bonus > 0:
 			wallet.add_credits(bonus)
 			SignalBus.dex_discovery.emit(found.morph_id, found.new_species, bonus)
+	goals.note(GoalDef.Kind.CROSSBREED, 1)
 	return CommandResult.success("MSG_CROSS_DONE", [last_breed.children.size()])
 
 

@@ -114,6 +114,7 @@ func refresh() -> void:
 	if _view == null:
 		return
 	_view.reduce_motion = session.settings.reduce_motion
+	_view.colorblind = session.settings.colorblind
 	_rebuild_seeds()
 	_update_hint()
 
@@ -132,12 +133,18 @@ func on_shown() -> void:
 
 func _change_floor(step: int) -> void:
 	var count: int = session.catalog.floors.size()
-	_show_floor((_floor_index + step + count) % count)
+	_show_floor((_floor_index + step + count) % count, step)
 
 
-func _show_floor(index: int) -> void:
+## Günün karanlık oranı (Main her yarım saniyede verir): çiftlik görünümüne hafif ton.
+func set_time_of_day(phase: float) -> void:
+	if _view != null:
+		_view.set_night(NightBackdrop.night_factor(phase))
+
+
+func _show_floor(index: int, direction: int = 0) -> void:
 	_floor_index = index
-	_view.show_floor(index)
+	_view.show_floor(index, direction)
 	var def: FloorDef = session.catalog.floors[index]
 	var unlocked: bool = session.farm.get_floor(index).unlocked
 	_floor_name.text = tr(def.display_name)

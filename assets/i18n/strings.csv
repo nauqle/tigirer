@@ -138,3 +138,44 @@ MSG_SOLD,Satıldı: +{c}%s,Sold: +{c}%s
 MSG_UV_BUILT,UV lambası seviye %s.,UV lamp level %s.
 MSG_WATERED_N,%s saksı sulandı.,Watered %s pots.
 LAB_HINT,"Önce iki ebeveyn seç, sonra çaprazla. Mutasyon şansını Geliştir sekmesindeki UV odası artırır.","Pick two parents, then crossbreed. The UV chamber in Upgrade raises your mutation odds."
+HUD_GOALS_DONE,Tüm hedefler tamam,All goals complete
+GOALS_TITLE,Hedefler,Goals
+GOALS_PROGRESS,%d / %d hedef tamam,%d / %d goals complete
+INTRO_NAME,FLORA · KULE BAKIM YZ,FLORA · TOWER CARETAKER AI
+INTRO_TITLE,Kuleye hoş geldin,Welcome to the tower
+INTRO_BODY,"Şehir yıllar önce karardı, ama kule hâlâ nefes alıyor. Ben FLORA, bakım yapay zekâsı. Alt kattaki sera çalışıyor; yeter ki biri onu yeniden canlandırsın. O kişi sensin.
+
+Tohum dik, parmağınla kaydırarak hasat et, iki bitkiyi çaprazla. Şehir tazelikle ayağa kalkar. Tamam, biraz da parayla.","The city went dark years ago, but the tower is still breathing. I'm FLORA, its caretaker AI. The greenhouse downstairs still runs; it just needs someone to bring it back. That someone is you.
+
+Plant, swipe to harvest, crossbreed two plants. A city gets back on its feet with fresh food. Fine, and a little money too."
+INTRO_BUTTON,Başlayalım,Let's grow
+GOAL_FIRST_HARVEST_TITLE,İlk hasat,First Harvest
+GOAL_FIRST_HARVEST_DESC,%s bitki hasat et.,Harvest %s plants.
+GOAL_FIRST_SALE_TITLE,İlk satış,First Sale
+GOAL_FIRST_SALE_DESC,Ürün sat: toplam %s kredi kazan.,Sell produce for a total of %s credits.
+GOAL_FIRST_CROSS_TITLE,İlk çaprazlama,First Cross
+GOAL_FIRST_CROSS_DESC,Lab'da iki tohumu çaprazla.,Crossbreed two seeds in the lab.
+GOAL_IRRIGATION_ONLINE_TITLE,Sulama hattı,Water Works
+GOAL_IRRIGATION_ONLINE_DESC,Geliştir sekmesinden ilk donanımını satın al.,Buy your first piece of equipment in the Upgrade tab.
+GOAL_TWO_SPECIES_TITLE,Meraklı botanikçi,Curious Botanist
+GOAL_TWO_SPECIES_DESC,Seed-Dex'te %s yeni tür keşfet.,Discover %s new species for the Seed-Dex.
+GOAL_FIRST_ORDER_TITLE,VIP müşteri,VIP Client
+GOAL_FIRST_ORDER_DESC,İlk VIP siparişini teslim et.,Deliver your first VIP order.
+GOAL_HARVEST_25_TITLE,Hasat ustası,Harvest Hand
+GOAL_HARVEST_25_DESC,Toplam %s bitki hasat et.,Harvest %s plants in total.
+GOAL_MEZZANINE_OPEN_TITLE,Yukarı çık,Going Up
+GOAL_MEZZANINE_OPEN_DESC,Kulede bir kat daha aç.,Open another floor of the tower.
+GOAL_GEAR_UP_TITLE,Donanım zamanı,Gear Up
+GOAL_GEAR_UP_DESC,Toplam %s donanım satın al.,Buy %s pieces of equipment in total.
+GOAL_EIGHT_SPECIES_TITLE,Koleksiyoncu,Collector
+GOAL_EIGHT_SPECIES_DESC,Seed-Dex'te %s yeni tür keşfet.,Discover %s new species for the Seed-Dex.
+GOAL_FIVE_ORDERS_TITLE,Güvenilir tedarikçi,Trusted Supplier
+GOAL_FIVE_ORDERS_DESC,%s VIP sipariş teslim et.,Deliver %s VIP orders.
+GOAL_RICH_TITLE,Altın sera,Gilded Greenhouse
+GOAL_RICH_DESC,Kasada %s krediye ulaş.,Reach %s credits in the bank.
+GOAL_WHOLE_TOWER_TITLE,Kule ayakta,Tower Alive
+GOAL_WHOLE_TOWER_DESC,Kulenin üç katını daha aç.,Open three more floors of the tower.
+GOAL_HARVEST_200_TITLE,Hasat makinesi,Harvest Machine
+GOAL_HARVEST_200_DESC,Toplam %s bitki hasat et.,Harvest %s plants in total.
+GOAL_THIRTY_SPECIES_TITLE,Yaşayan ansiklopedi,Living Encyclopedia
+GOAL_THIRTY_SPECIES_DESC,Seed-Dex'te %s yeni tür keşfet.,Discover %s new species for the Seed-Dex.

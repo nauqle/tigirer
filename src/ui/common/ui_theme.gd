@@ -61,6 +61,7 @@ static func build(text_scale: float, colorblind: bool) -> Theme:
 	_button(theme, "DangerButton", UiTokens.with_alpha(bad, 0.16), UiTokens.with_alpha(bad, 0.55), bad, UiTokens.TEXT, bad, 0.0)
 	_button(theme, "IconButton", UiTokens.SURFACE_2, UiTokens.HAIRLINE, UiTokens.TEXT, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_PILL, 18, 12)
 	_button(theme, "CardButton", UiTokens.SURFACE_2, UiTokens.HAIRLINE, UiTokens.TEXT, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 12, 12)
+	_button(theme, "ChipButton", UiTokens.SURFACE_2, UiTokens.HAIRLINE, UiTokens.TEXT, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_PILL, 14, 8)
 	_button(theme, "BuyButton", UiTokens.with_alpha(accent, 0.10), UiTokens.with_alpha(accent, 0.6), accent, accent, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 18, 12)
 	_button(theme, "MutantButton", UiTokens.with_alpha(uv, 0.14), UiTokens.with_alpha(uv, 0.6), UiTokens.TEXT, UiTokens.TEXT, uv, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 12, 12)
 	_button(theme, "SegmentButton", Color(0, 0, 0, 0), Color(0, 0, 0, 0), UiTokens.TEXT_MUTED, UiTokens.TEXT, accent, 0.0, Color(0, 0, 0, 0), UiTokens.RADIUS_MD, 14, 12)

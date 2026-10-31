@@ -26,6 +26,8 @@ var colorblind: bool = false
 var tutorial_done: bool = false
 ## Arayüz dili ("tr", "en"); boş = henüz seçilmedi (işletim sistemi diline göre ilk açılışta seçilir).
 var language: String = ""
+## FLORA'nın açılış kartı gösterildi mi (yalnızca ilk açılışta çıkar).
+var intro_seen: bool = false
 
 
 func text_scale() -> float:
@@ -70,6 +72,11 @@ static func default_language(os_language: String) -> String:
 	return "tr" if os_language.to_lower().begins_with("tr") else "en"
 
 
+func set_intro_seen(value: bool) -> void:
+	intro_seen = value
+	changed.emit()
+
+
 func set_tutorial_done(value: bool) -> void:
 	tutorial_done = value
 	changed.emit()
@@ -85,6 +92,7 @@ func to_dict() -> Dictionary:
 		"colorblind": colorblind,
 		"tutorial_done": tutorial_done,
 		"language": language,
+		"intro_seen": intro_seen,
 	}
 
 
@@ -97,4 +105,5 @@ func load_dict(data: Dictionary) -> void:
 	tutorial_done = bool(data.get("tutorial_done", false))
 	var saved_language: String = String(data.get("language", ""))
 	language = saved_language if LANGUAGES.has(saved_language) else ""
+	intro_seen = bool(data.get("intro_seen", false))
 	changed.emit()

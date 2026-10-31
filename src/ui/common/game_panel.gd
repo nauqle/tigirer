@@ -29,6 +29,11 @@ func refresh() -> void:
 	pass
 
 
+## Günün evresi (0..1) değişti (yalnızca günün saatine tepki veren paneller kullanır).
+func set_time_of_day(_phase: float) -> void:
+	pass
+
+
 ## Sekme görünür olunca çağrılır.
 func on_shown() -> void:
 	refresh()

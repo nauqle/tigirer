@@ -117,3 +117,16 @@ func test_the_language_survives_a_round_trip_and_garbage_is_dropped() -> void:
 
 	restored.load_dict({"language": "klingon"})
 	assert_eq(restored.language, "", "bozuk dil seçimi temizlenir")
+
+
+func test_the_intro_card_is_shown_once_and_the_flag_survives_a_round_trip() -> void:
+	var settings: GameSettings = GameSettings.new()
+	assert_false(settings.intro_seen, "ilk açılışta gösterilmemiş")
+
+	settings.set_intro_seen(true)
+	var restored: GameSettings = GameSettings.new()
+	restored.load_dict(JSON.parse_string(JSON.stringify(settings.to_dict())) as Dictionary)
+
+	assert_true(restored.intro_seen)
+	restored.load_dict({})
+	assert_false(restored.intro_seen, "eksik anahtar varsayılana döner")

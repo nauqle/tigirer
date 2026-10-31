@@ -94,6 +94,7 @@ func test_plant_all_fills_empty_pots_only_as_far_as_the_seeds_reach() -> void:
 
 func test_the_full_loop_plant_grow_harvest_and_sell() -> void:
 	var session: GameSession = _session()
+	session.goals.setup([] as Array[GoalDef], session.wallet)  # hedef ödülleri satış gelirini karıştırmasın
 	var start_credits: int = session.wallet.credits
 	session.plant_all(0, REED)
 	_grow(session, _catalog.farm_config.base_grow_seconds + 5.0)
@@ -384,3 +385,83 @@ func test_gap_without_news_does_not_announce_a_report() -> void:
 	assert_not_null(report)
 	assert_false(report.has_news())
 	assert_eq(count["n"], 0)
+
+
+# --------------------------------------------------------------------- hedefler
+
+
+func test_a_fresh_game_starts_on_the_first_goal_with_nothing_done() -> void:
+	var session: GameSession = _session()
+
+	assert_eq(session.goals.current().id, &"first_harvest")
+	assert_eq(session.goals.completed_count(), 0)
+	assert_eq(session.goals.defs.size(), _catalog.goals.size())
+	assert_true(_catalog.goals.size() >= 10, "yeterince hedef var")
+
+
+func test_harvesting_three_plants_completes_the_first_goal_and_pays_its_reward() -> void:
+	var session: GameSession = _session()
+	var announced: Array[StringName] = []
+	var listener: Callable = func(id: StringName, _reward: int) -> void: announced.append(id)
+	SignalBus.goal_completed.connect(listener)
+	session.plant_all(0, REED)
+	_grow(session, 100.0)
+	var credits: int = session.wallet.credits
+	var reward: int = session.goals.current().reward
+
+	for pot_index: int in 3:
+		session.harvest_pot(0, pot_index)
+	SignalBus.goal_completed.disconnect(listener)
+
+	assert_eq(announced, [&"first_harvest"] as Array[StringName], "hedef duyuruldu")
+	assert_eq(session.wallet.credits, credits + reward, "ödül yazıldı")
+	assert_eq(session.goals.current().id, &"first_sale", "sıradaki hedef etkin")
+
+
+func test_selling_crossbreeding_and_buying_equipment_feed_their_goals() -> void:
+	var session: GameSession = _session()
+	session.wallet.add_credits(2000)
+
+	session.crossbreed(REED, VINE)
+	session.buy_irrigation(0, 0)
+
+	assert_eq(session.goals.progress_of(_goal(session, &"first_cross")), 1, "çaprazlama sayıldı")
+	assert_eq(session.goals.progress_of(_goal(session, &"irrigation_online")), 1, "donanım alımı sayıldı")
+
+	session.plant_all(0, REED)
+	_grow(session, 100.0)
+	for pot_index: int in 3:
+		session.harvest_pot(0, pot_index)
+	session.sell_everything()
+	assert_true(session.goals.progress_of(_goal(session, &"first_sale")) > 0, "satış geliri sayıldı")
+
+
+func test_the_goal_chain_survives_save_and_load() -> void:
+	var session: GameSession = _session()
+	session.goals.note(GoalDef.Kind.HARVEST, 3)
+	session.goals.note(GoalDef.Kind.SELL_CREDITS, 25)
+	assert_true(session.save_game())
+	var loaded: GameSession = _session(9)
+
+	assert_true(loaded.load_game())
+
+	assert_eq(loaded.goals.completed_count(), 1)
+	assert_eq(loaded.goals.current().id, &"first_sale")
+	assert_eq(loaded.goals.progress_of(loaded.goals.current()), 25)
+
+
+func test_reset_game_restarts_the_goal_chain() -> void:
+	var session: GameSession = _session()
+	session.goals.note(GoalDef.Kind.HARVEST, 3)
+
+	session.reset_game()
+
+	assert_eq(session.goals.completed_count(), 0)
+	assert_eq(session.goals.current().id, &"first_harvest")
+
+
+func _goal(session: GameSession, id: StringName) -> GoalDef:
+	for def: GoalDef in session.goals.defs:
+		if def.id == id:
+			return def
+	return null

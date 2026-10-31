@@ -4,7 +4,7 @@ extends Node
 ##
 ## Uygular: design/game-brief.md, FAZ 5 (dikey mobil arayüz, Seed-Dex, çevrimdışı kazanç): "çalıştır ve gözle" kanıtı.
 ##
-## Komut satırı (godot ... -- seçenekler): --scenario=farm|market|lab|dex|upgrades|settings|offline|fresh, --seed=N,
+## Komut satırı (godot ... -- seçenekler): --scenario=farm|market|lab|dex|upgrades|settings|offline|fresh|goals|intro, --seed=N,
 ## --scale=0..3 (yazı boyutu), --lang=tr|en, --colorblind, --reduce-motion.
 ## Dev-only: kullanıcıya dönük metinler bilerek yerelleştirilmedi (src/ui kuralı bu klasörü kapsamaz).
 
@@ -26,6 +26,7 @@ func _ready() -> void:
 	_main.save_path = SAVE_PATH
 	_main.rng_seed = int(options.get("seed", 5))
 	_main.language_override = String(options.get("lang", "tr"))
+	_main.show_intro_card = false
 	add_child(_main)
 	var settings: GameSettings = _main.session.settings
 	settings.set_text_scale_index(int(options.get("scale", 1)))
@@ -38,6 +39,12 @@ func _prepare(scenario: String) -> void:
 	var session: GameSession = _main.session
 	session.wallet.add_credits(4000)
 	match scenario:
+		"intro":
+			_main.intro_overlay().show_intro()
+		"goals":
+			session.goals.note(GoalDef.Kind.HARVEST, 3)
+			session.goals.note(GoalDef.Kind.SELL_CREDITS, 25)
+			_main.open_goals()
 		"fresh":
 			session.wallet.spend(session.wallet.credits - 120)
 			_main.open_tab(0)

@@ -17,6 +17,7 @@ func before_each() -> void:
 	_main.save_path = SAVE_PATH
 	_main.rng_seed = 3
 	_main.language_override = "tr"
+	_main.show_intro_card = false
 	# Sabit boyutlu sınama için çapaları sol üste al (zıt çapalı denetimde `size` atamak uyarı verir)
 	_main.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	add_to_tree(_main)
@@ -535,3 +536,65 @@ func test_the_farm_badge_shows_ripe_plants_while_another_tab_is_open() -> void:
 	assert_true(_main.nav_bar().badge_visible(0), "olgun bitki bekliyor")
 	_main.open_tab(0)
 	assert_false(_main.nav_bar().badge_visible(0), "çiftliğe dönünce söner")
+
+
+# --------------------------------------------------------- hedefler ve açılış kartı
+
+
+func test_the_hud_goal_chip_shows_the_current_goal_and_opens_the_goals_sheet() -> void:
+	await _frames()
+	var current: GoalDef = _session.goals.current()
+
+	var chip: Button = _button(GoalText.title(current))
+	assert_not_null(chip, "HUD'da etkin hedef çipi var")
+	chip.pressed.emit()
+
+	assert_true(_main.goals_overlay().visible, "çipe basınca hedefler sayfası açıldı")
+	_main._on_back_pressed()
+	assert_false(_main.goals_overlay().visible, "geri tuşu sayfayı kapatır")
+
+
+func test_completing_a_goal_updates_the_chip_and_shows_a_toast() -> void:
+	await _frames()
+	var first: GoalDef = _session.goals.current()
+	var second: GoalDef = _session.goals.defs[1]
+
+	_session.goals.note(first.kind, first.target)
+	await _frames()
+
+	assert_not_null(_button(GoalText.title(second)), "çip sıradaki hedefe geçti")
+	var shown: String = "\n".join(_main.toasts().visible_texts())
+	assert_true(shown.contains(GoalText.title(first)), "tamamlanan hedef bildirimi: %s" % shown)
+
+
+func test_the_goals_sheet_lists_every_goal_with_the_current_one_highlighted() -> void:
+	await _frames()
+	_main.open_goals()
+
+	var cards: int = _main.goals_overlay().find_children("*", "PanelContainer", true, false).size()
+
+	assert_true(cards > _session.goals.defs.size(), "her hedef için bir kart (+ özet): %d" % cards)
+	var labels: Array[String] = []
+	for node: Node in _main.goals_overlay().find_children("*", "Label", true, false):
+		labels.append((node as Label).text)
+	assert_true(labels.has(GoalText.title(_session.goals.defs[0])))
+	assert_true(labels.has(GoalText.title(_session.goals.defs[_session.goals.defs.size() - 1])))
+
+
+func test_the_intro_card_shows_once_and_closing_it_marks_it_seen() -> void:
+	var fresh: Main = (load(MAIN_SCENE) as PackedScene).instantiate() as Main
+	fresh.production_mode = false
+	fresh.save_path = SAVE_PATH
+	fresh.language_override = "tr"
+	fresh.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	add_to_tree(fresh)
+	fresh.size = Vector2(1080.0, 1920.0)
+	await _frames()
+
+	assert_true(fresh.intro_overlay().visible, "ilk açılışta kart görünür")
+	assert_false(fresh.session.settings.intro_seen)
+
+	fresh._on_back_pressed()  # geri tuşu kartı kapatır
+
+	assert_false(fresh.intro_overlay().visible)
+	assert_true(fresh.session.settings.intro_seen, "kapanınca görüldü sayıldı")
