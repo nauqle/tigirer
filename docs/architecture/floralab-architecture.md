@@ -300,8 +300,10 @@ FarmView (Control)                          ← API değişmedi: pot_tapped, har
   sahnede ayrı ışık bilboard'u (`spatial_plant_halo`) olarak bitkinin arkasına konur.
 - **Renk uzayı (Compatibility'de bulundu):** gölgelendirilmemiş (unshaded) `ALBEDO` doğrudan gösterim değeri olarak yazılır (0.5 → 128); atlas dokusu `source_color` ile okunmaz, çeviri yapılmaz.
 - **Sıralama:** toplamalı UV huzmesi bitkinin ÖNÜNDE çizilirse bitkiyi soldurur (mor ekleme); huzme nesne merkezi bitkinin arkasında tutularak önce çizilir (`BEAM_Z`).
-- **Maliyet bütçesi (ölçülmedi, tasarım):** 4×4 katta yaklaşık 150 çizim çağrısı, 4 OmniLight3D, gölge haritası yok (temas gölgesi bilboard), bir 2D atlas geçişi.
-  Gerçek cihazda ölçülmedi (bölüm 15). Sekme gizliyken hem 3D pencere hem atlas çizilmez.
+- **Maliyet (SAYILAR ölçüldü, ZAMAN ölçülmedi):** gölge haritası yok (temas gölgesi bilboard), 4 OmniLight3D'ye kadar (bölme başına bir), kare başına bir 2D atlas geçişi.
+  `ui_showcase --render-stats` (yazılım OpenGL'li Xvfb, 90. kare, arayüz dahil): 3×2 çiftlik **231 çizim çağrısı, 595 nesne, 18.7 bin üçgen, 53 MB doku belleği**;
+  4×4 kule **288 / 660 / 25 bin / 62 MB**; karşılaştırma olarak 3D'siz pazar sekmesi 248 / 1045 / 17 bin / 30 MB. Yani çizim çağrısı sayısı 2D bir ekranla aynı sınıfta;
+  asıl ek maliyet bellek (≈ +23-32 MB: atlas + MSAA'lı 3D hedef) ve 3D geçişin dolum hızı. Gerçek cihazda kare süresi ölçülmedi (bölüm 15). Sekme gizliyken hem 3D pencere hem atlas çizilmez.
 
 ## 8. Çiftlik kuralları (FAZ 2)
 

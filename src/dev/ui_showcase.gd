@@ -4,7 +4,7 @@ extends Node
 ##
 ## Uygular: design/game-brief.md, FAZ 5 (dikey mobil arayüz, Seed-Dex, çevrimdışı kazanç): "çalıştır ve gözle" kanıtı.
 ##
-## Komut satırı (godot ... -- seçenekler): --scenario=farm|drones|day|tower|market|lab|dex|upgrades|settings|offline|fresh|goals|intro|toasts, --seed=N,
+## Komut satırı (godot ... -- seçenekler): --scenario=farm|drones|day|tower|market|lab|dex|upgrades|settings|offline|fresh|goals|intro|toasts, --seed=N, --render-stats,
 ## --scale=0..3 (yazı boyutu), --lang=tr|en, --colorblind, --reduce-motion.
 ## Dev-only: kullanıcıya dönük metinler bilerek yerelleştirilmedi (src/ui kuralı bu klasörü kapsamaz).
 
@@ -33,6 +33,23 @@ func _ready() -> void:
 	settings.set_colorblind(options.has("colorblind"))
 	settings.set_reduce_motion(options.has("reduce-motion"))
 	_prepare(String(options.get("scenario", "farm")))
+	if options.has("render-stats"):
+		_print_render_stats.call_deferred()
+
+
+## --render-stats: 90 kare sonra çizim çağrısı, nesne, üçgen ve bellek sayılarını yazıp çıkar (bütçe belgesi için; cihaz ölçümü DEĞİLDİR).
+func _print_render_stats() -> void:
+	for i: int in 90:
+		await get_tree().process_frame
+	var info: Dictionary = {
+		"draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+		"objects": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
+		"primitives": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
+		"texture_mb": snappedf(float(RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TEXTURE_MEM_USED)) / 1048576.0, 0.1),
+		"video_mb": snappedf(float(RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED)) / 1048576.0, 0.1),
+	}
+	print("RENDER_STATS ", JSON.stringify(info))
+	get_tree().quit()
 
 
 func _prepare(scenario: String) -> void:
