@@ -19,7 +19,7 @@ FARM_PLANT_ALL,Ekim,Plant
 FARM_LOCKED,Bu kat henüz kapalı.,This floor is still sealed.
 FARM_GO_UPGRADES,Geliştir'e git,Open upgrades
 FARM_NO_SEEDS,Tohumun kalmadı. Lab'da çaprazla ya da hasattan dönen tohumları kullan.,Out of seeds. Crossbreed in the lab or reuse seeds that come back from harvests.
-HINT_PLANT,"Alttan bir tohum seç, sonra boş saksılara dokun. Ya da «Ekim»e bas.","Pick a seed below, then tap an empty pot. Or hit “Plant”."
+HINT_PLANT,"Alttan bir tohum seç, sonra boş saksılara dokun. Ya da Ekim düğmesine bas.","Pick a seed below, then tap an empty pot. Or press the Plant button."
 HINT_WATER,"Bir saksı kurumak üzere. Dokun, sulayalım.",A pot is running dry. Tap it and I'll water it.
 HINT_SWIPE,Olgun bitkiler hazır. Parmağını üzerlerinden kaydır: zincir uzadıkça kombo büyür.,"Ripe plants are ready. Swipe through them: the longer the chain, the bigger the combo."
 HINT_SELL,Hasat ettiklerini Pazar'da sat. Fiyatlar hiç durmuyor.,Sell your harvest at the Market. Prices never sit still.

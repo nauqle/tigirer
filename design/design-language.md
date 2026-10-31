@@ -72,7 +72,7 @@ sonra yumuşak gölgeyle (`CardRaised`, `Toast`, `Sheet`) verilir. Dokunma hedef
 
 | Bileşen | Kural |
 |---|---|
-| `FxButton` | basınca 0.955 ölçek + yaylanma, ses olayı; **ekranda tek `PrimaryButton`** |
+| `FxButton` | basınca 0.955 ölçek + yaylanma, ses olayı; **ekranda tek `PrimaryButton`** (her sekme için `main_screens_test` ile korunur; ikincil eylemler — "Tümünü sat", sipariş teslimi, donanım alımı — `BuyButton`) |
 | `PriceButton` | [ikon] metin [kredi ikonu tutar]; kredi yetmiyorsa soluk ve pasif; yetiyorsa `BuyButton` (klorofil çerçeve) |
 | `CreditTag` | renkli öz kristali + sayı; artışta sayarak yükselir ve sıçrar |
 | `NavBar` | ikon + etiket, seçili = klorofil yumuşak hap + yaylanan ikon; dikkat rozeti nabız atar |
