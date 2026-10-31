@@ -116,3 +116,14 @@ func test_a_wrong_key_cannot_read_the_file() -> void:
 	var file: FileAccess = FileAccess.open_encrypted_with_pass(TEST_PATH, FileAccess.READ, "yanlis-anahtar")
 
 	assert_null(file, "farklı anahtarla açılamaz")
+
+
+func test_a_lone_backup_still_counts_as_a_save_and_loads() -> void:
+	_saves.save({"generation": 1})
+	_saves.save({"generation": 2})
+	DirAccess.remove_absolute(TEST_PATH)
+
+	assert_false(FileAccess.file_exists(TEST_PATH), "ana dosya yok")
+	assert_true(_saves.has_save(), "yedek tek başına kayıt sayılır")
+	assert_eq((_saves.load_state()["state"] as Dictionary)["generation"], 1.0)
+

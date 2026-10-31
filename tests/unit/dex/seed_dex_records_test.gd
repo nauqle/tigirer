@@ -88,6 +88,14 @@ func test_completion_is_discovered_over_total_species() -> void:
 	assert_almost_eq(_dex.completion(_ruleset), 3.0 / 27.0, EPSILON)
 
 
+func test_an_empty_ruleset_has_no_species_and_zero_completion_without_dividing_by_zero() -> void:
+	var empty: GeneticsRuleset = GeneticsRuleset.new()
+	_record(_gene(GeneticsFixtures.STEM_A, GeneticsFixtures.LEAF_A, GeneticsFixtures.FRUIT_A, "a"))
+
+	assert_eq(_dex.total_species(empty), 0)
+	assert_almost_eq(_dex.completion(empty), 0.0, EPSILON, "toplam 0 iken tamamlanma 0 (1 değil)")
+
+
 func test_entries_are_sorted_by_species_id_and_remember_the_first_day() -> void:
 	_record(_gene(GeneticsFixtures.STEM_R, GeneticsFixtures.LEAF_R, GeneticsFixtures.FRUIT_R, "z"), 5)
 	_record(_gene(GeneticsFixtures.STEM_A, GeneticsFixtures.LEAF_A, GeneticsFixtures.FRUIT_A, "a"), 2)
@@ -125,3 +133,18 @@ func test_corrupt_entries_are_skipped_on_load() -> void:
 	_dex.load_dict({"entries": [{"morph": "", "sample": {}}, {"morph": "x", "sample": {"stem": ["a"]}}, 7]})
 
 	assert_eq(_dex.species_count(), 0)
+
+
+func test_loading_floors_nonsensical_counters_to_one() -> void:
+	_record(_gene(GeneticsFixtures.STEM_A, GeneticsFixtures.LEAF_A, GeneticsFixtures.FRUIT_A, "a"), 4)
+	var data: Dictionary = _dex.to_dict()
+	var item: Dictionary = (data["entries"] as Array)[0] as Dictionary
+	item["seen"] = 0
+	item["day"] = -7
+	var restored: SeedDex = SeedDex.new()
+
+	restored.load_dict(data)
+
+	var entry: SeedDex.Entry = restored.entries()[0]
+	assert_eq(entry.times_seen, 1, "görülme sayısı en az 1")
+	assert_eq(entry.first_day, 1, "ilk gün en az 1")

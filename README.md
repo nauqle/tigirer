@@ -32,7 +32,7 @@ Terk edilmiş bir gökdelenin katlarında hidroponik bir çiftlik kur; iki tohum
 # Oyunu aç (ana sahne src/ui/main.tscn). Temiz klonda önce: godot --headless --path . --import  (çeviri dosyasını üretir)
 godot --path . --windowed
 
-bash tools/run_tests.sh                                   # tüm testler (345)
+bash tools/run_tests.sh                                   # tüm testler (350)
 bash tools/capture_faz5_evidence.sh                       # arayüz ekran görüntülerini yeniden üret (gerçek çizim, 1080x1920 ve 1080x2400)
 bash tools/setup-godot-android.sh                         # bir kez: Android dışa aktarma araçları
 godot --headless --export-debug "Android" build/floralab-debug.apk

@@ -27,6 +27,27 @@ func test_text_scale_follows_the_index_and_the_index_is_clamped() -> void:
 	assert_almost_eq(settings.text_scale(), 0.9, 0.0001)
 
 
+func test_text_scale_stays_inside_the_table_even_when_the_index_field_is_out_of_range() -> void:
+	var settings: GameSettings = GameSettings.new()
+
+	settings.text_scale_index = 9
+	assert_almost_eq(settings.text_scale(), 1.4, 0.0001, "çok büyük indeks son ölçeğe sıkıştırılır")
+
+	settings.text_scale_index = -3
+	assert_almost_eq(settings.text_scale(), 0.9, 0.0001, "negatif indeks ilk ölçeğe sıkıştırılır")
+
+
+func test_loading_settings_announces_a_change_so_the_interface_restyles() -> void:
+	var settings: GameSettings = GameSettings.new()
+	var count: Dictionary = {"n": 0}
+	settings.changed.connect(func() -> void: count["n"] += 1)
+
+	settings.load_dict({"colorblind": true})
+
+	assert_eq(count["n"], 1)
+	assert_true(settings.colorblind)
+
+
 func test_every_setter_announces_a_change() -> void:
 	var settings: GameSettings = GameSettings.new()
 	var count: Dictionary = {"n": 0}

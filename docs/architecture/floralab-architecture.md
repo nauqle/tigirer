@@ -340,11 +340,13 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
 
 - Koşucu: `bash tools/run_tests.sh [--filter=...]` (gdUnit4 stili çıkış kodları: 0 geçti, 100 başarısız, 105 yükleme hatası,
   2 test yok; Godot çıktısında `SCRIPT ERROR` varsa 1). gdUnit4 kurulumu kullanıcı onayı bekliyor (bkz. 15); test dosyaları gdUnit4'e geçişte adlandırmayı korur.
-  Şu an **345 test** geçiyor (birim: genetik, çiftlik, ekonomi, otomasyon, Seed-Dex, kayıt, arayüz yardımcıları; entegrasyon: gerçek veri + gerçek sahneler,
+  Şu an **350 test** geçiyor (birim: genetik, çiftlik, ekonomi, otomasyon, Seed-Dex, kayıt, arayüz yardımcıları; entegrasyon: gerçek veri + gerçek sahneler,
   `Main` arayüzü 20 test: dokunuş, kaydırma, satış, sipariş, çaprazlama, satın alma, ayarlar, geri tuşu, uzun ekran, en büyük yazı).
 - İstatistiksel testler tohumlu RNG ile deterministiktir. Testlerin gerçekten bir şey yakaladığı **mutasyon testiyle** (kodu bilerek bozup testin kırıldığını
-  görerek) doğrulandı: FAZ 1 (`PlantInstance` 35/35), FAZ 2–4 mantığı; bulunan sağ kalanlar yeni testlerle kapatıldı. FAZ 5 mantığı (Seed-Dex, çevrimdışı, kayıt)
-  için mutasyon turu yapılmadı ya da yalnızca kısmen yapıldı: bkz. bölüm 15.
+  görerek) doğrulandı: FAZ 1 (`PlantInstance` 35/35), FAZ 2 (38/38), FAZ 3–4 (5 sağ kalan yeni testlerle kapatıldı ve yeniden çalıştırılarak doğrulandı) ve FAZ 5 mantığı
+  (`OfflineProgress`, `SeedDex`, `SaveManager`, `GameSettings`: 46 mutant; ilk turda 15 sağ kaldı, yeni testlerle 44'ü yakalandı). Kalan ikisi: `op_budget_carry_unbounded`
+  EŞDEĞER mutanttır (`minf(budget, 1.0)` döngüden sonra zaten < 1 olan değeri değiştirmez); `sm_no_verify` (yazılan dosyayı geri okuyup doğrulama) dosya sistemi
+  hatası enjekte edilmeden sınanamaz ve savunma amaçlı bırakıldı. `GameSession` ve arayüz için sistematik mutasyon turu yapılmadı (`Main` entegrasyon testleri var).
 - Görsel kanıt: `production/qa/evidence/` altında `faz1-plant-instance/`, `faz2-farm/`, `faz5-ui/` (her birinde README ve `stamp.txt`). Yeniden üretmek için:
   `bash tools/capture_screenshot.sh <sahne.tscn> <çıkış.png> [--frames=N] -- <seçenekler>` (`CAPTURE_SIZE=1080x2400` ile uzun ekran),
   FAZ 5 setinin tamamı için `bash tools/capture_faz5_evidence.sh`.
@@ -390,6 +392,6 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
 4. **Sanat:** SVG parçalar yer tutucu kalitede ama oyun içi kullanıma uygun; elle çizilmiş sanat gelirse `PlantPartDef.texture` değişir, kod değişmez.
 5. **Dil:** yalnızca Türkçe (`tr`); yeni dil = CSV'ye sütun + `locale/translations` kaydı.
 6. **Ses:** sesler kodla üretilen yer tutucu seslerdir; ses tasarımcısı eli değmedi.
-7. **Mutasyon testi:** FAZ 5 mantığı (Seed-Dex, çevrimdışı, kayıt, ayarlar, oturum) için sistematik mutasyon turu tamamlanmadı; testler birçok kenar durumu kapsar ama "gerçekten yakalıyor mu" kanıtı FAZ 1–4 kadar güçlü değil.
+7. **Mutasyon testi kapsamı:** FAZ 1–5 mantık sınıfları mutasyonla doğrulandı (bölüm 13); `GameSession` (komut katmanı) ve arayüz panelleri için sistematik mutasyon turu yok: bunlar entegrasyon testleriyle (`game_session_flow_test`, `main_screens_test`) ve ekran görüntüleriyle sınandı.
 8. **Ekonomi/denge:** insan oynatması yok (karar 17). Çevrimdışı dönüşte piyasa/siparişler tek tikle ilerler (ayrıntılı çevrimdışı piyasa benzetimi yok).
 9. **Güncelleme imzası:** release anahtar deposu depoda yok (karar 22); mağaza yayını için kendi anahtarınla imzalamak gerekir.
