@@ -367,6 +367,28 @@ func harvest_pot(floor_index: int, pot_index: int) -> CommandResult:
 	return CommandResult.success()
 
 
+## Katta olgun TÜM bitkileri tek kaydırma zinciri olarak biçer (kombo ödülüyle); kaydırması zor olan oyuncular için tek dokunuşluk yol.
+func harvest_floor(floor_index: int) -> CommandResult:
+	var floor_state: FloorState = farm.get_floor(floor_index)
+	if floor_state == null:
+		return CommandResult.failure("ERR_INVALID_TARGET")
+	if not floor_state.unlocked:
+		return CommandResult.failure("ERR_FLOOR_LOCKED")
+	var ripe: Array[int] = []
+	for pot_index: int in floor_state.pots.size():
+		if floor_state.pots[pot_index].is_mature():
+			ripe.append(pot_index)
+	if ripe.is_empty():
+		return CommandResult.failure("ERR_NOTHING_TO_HARVEST")
+	begin_swipe()
+	var cut: int = 0
+	for pot_index: int in ripe:
+		if swipe_harvest(floor_index, pot_index):
+			cut += 1
+	end_swipe()
+	return CommandResult.success("MSG_HARVESTED_N", [cut])
+
+
 ## Yeni bir kaydırma başlar: kombo sayacı sıfırlanır.
 func begin_swipe() -> void:
 	_swipe_combo = 0

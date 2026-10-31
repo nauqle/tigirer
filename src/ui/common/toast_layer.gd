@@ -63,6 +63,15 @@ func show_text(text: String, kind: Kind = Kind.INFO) -> void:
 	_create(text, kind)
 
 
+## Tüm bildirimleri hemen kaldırır (ekran görüntüsü alırken ve sahne değişirken sakin bir görünüm için).
+func clear() -> void:
+	for entry: Dictionary in _live:
+		var panel: Control = entry["panel"] as Control
+		if is_instance_valid(panel):
+			panel.queue_free()
+	_live.clear()
+
+
 ## Şu an ekranda olan bildirim metinleri (test ve erişilebilirlik için).
 func visible_texts() -> Array[String]:
 	var texts: Array[String] = []

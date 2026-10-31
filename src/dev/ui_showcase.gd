@@ -4,7 +4,7 @@ extends Node
 ##
 ## Uygular: design/game-brief.md, FAZ 5 (dikey mobil arayüz, Seed-Dex, çevrimdışı kazanç): "çalıştır ve gözle" kanıtı.
 ##
-## Komut satırı (godot ... -- seçenekler): --scenario=farm|market|lab|dex|upgrades|settings|offline|fresh|goals|intro, --seed=N,
+## Komut satırı (godot ... -- seçenekler): --scenario=farm|market|lab|dex|upgrades|settings|offline|fresh|goals|intro|toasts, --seed=N,
 ## --scale=0..3 (yazı boyutu), --lang=tr|en, --colorblind, --reduce-motion.
 ## Dev-only: kullanıcıya dönük metinler bilerek yerelleştirilmedi (src/ui kuralı bu klasörü kapsamaz).
 
@@ -79,6 +79,11 @@ func _prepare(scenario: String) -> void:
 			session.buy_irrigation(0, 0)
 			session.buy_drone(0)
 			_main.open_tab(4)
+		"toasts":
+			session.market.start_event(session.catalog.market_events[0])
+			session.crossbreed(REED, VINE)
+			session.goals.note(GoalDef.Kind.HARVEST, 3)
+			_main.open_tab(0)
 		"settings":
 			_main.open_settings()
 		"offline":
@@ -90,6 +95,10 @@ func _prepare(scenario: String) -> void:
 			session.apply_offline(5400.0)
 			_main.open_tab(0)
 	await get_tree().process_frame
+	# Durumu hazırlayan komutlar bildirim ve "+N" üretir; ekran görüntüsü sakin olsun diye temizlenir (yalnız "toasts" onları gösterir).
+	if scenario != "toasts":
+		_main.toasts().clear()
+		_main.hud().clear_floats()
 
 
 ## Çiftlikte birkaç bitki olgunlaştırıp hasat eder: envanterde ürün olur.

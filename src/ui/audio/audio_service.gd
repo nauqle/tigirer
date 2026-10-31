@@ -16,13 +16,19 @@ const POOL_SIZE: int = 8
 ## Kombo başına perde artışı ve en çok kaç adım sayılacağı.
 const _COMBO_PITCH_STEP: float = 0.06
 const _COMBO_PITCH_MAX_STEPS: int = 12
+## Sera uğultusu efektlerin çok altında durur: fark edilir ama dinlerken yormaz.
+const AMBIENCE_VOLUME_DB: float = -24.0
 
-## Kapalıysa hiçbir ses çalmaz.
-var enabled: bool = true
+## Kapalıysa hiçbir ses çalmaz; sera uğultusu da durur. Açılınca uğultu yeniden başlar.
+var enabled: bool = true:
+	set(value):
+		enabled = value
+		_sync_ambience()
 ## Ana ses düzeyi (dB).
 var volume_db: float = -4.0
 
 var _players: Array[AudioStreamPlayer] = []
+var _ambience: AudioStreamPlayer
 var _streams: Dictionary = {}
 var _next_player: int = 0
 
@@ -34,6 +40,11 @@ func _ready() -> void:
 		_players.append(player)
 	for id: SfxBank.Id in SfxBank.Id.values():
 		_streams[id] = SfxBank.make(id)
+	_ambience = AudioStreamPlayer.new()
+	_ambience.stream = SfxBank.make_ambience()
+	_ambience.volume_db = AMBIENCE_VOLUME_DB
+	add_child(_ambience)
+	_sync_ambience()
 	SignalBus.plant_harvested.connect(_on_plant_harvested)
 	SignalBus.plant_planted.connect(_on_plant_planted)
 	SignalBus.pot_watered.connect(_on_pot_watered)
@@ -59,6 +70,21 @@ func play(id: SfxBank.Id, pitch: float = 1.0) -> void:
 	player.pitch_scale = pitch
 	player.volume_db = volume_db
 	player.play()
+
+
+## Sera uğultusu çalıyor mu (test ve ayarlar için).
+func is_ambience_playing() -> bool:
+	return _ambience != null and _ambience.playing
+
+
+## Uğultuyu `enabled` durumuna uydurur: açıkken döngü başlar, kapalıyken susar.
+func _sync_ambience() -> void:
+	if _ambience == null:
+		return
+	if enabled and not _ambience.playing:
+		_ambience.play()
+	elif not enabled and _ambience.playing:
+		_ambience.stop()
 
 
 func _on_plant_harvested(result: HarvestResult) -> void:

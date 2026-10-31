@@ -205,3 +205,40 @@ func test_with_nothing_left_to_buy_the_cheapest_cost_is_minus_one() -> void:
 		_service.buy_lab_uv()
 
 	assert_eq(_service.cheapest_purchase_cost(), -1)
+
+
+func test_the_lab_uv_room_is_the_cheapest_purchase_when_it_is_cheaper_than_the_next_floor() -> void:
+	for row: int in _farm.get_floor(0).rows:
+		_service.buy_irrigation(0, row)
+		_service.buy_uv_lamp(0, row)
+		_service.buy_uv_lamp(0, row)
+	for i: int in 3:
+		_service.buy_drone(0)
+
+	# Kalan: lab UV odası (400) ve 1. katı açma (500)
+	assert_eq(_service.cheapest_purchase_cost(), 400)
+
+
+func test_a_maxed_item_checked_last_does_not_hide_cheaper_purchases() -> void:
+	_wallet.add_credits(100000)
+	_service.unlock_floor(1)
+	_service.unlock_floor(2)
+	var last_floor: int = _service.floor_defs.size() - 1
+	for i: int in 3:
+		_service.buy_drone(last_floor)  # taranan son kalem bitti (-1)
+
+	assert_eq(_service.cheapest_purchase_cost(), 100, "sulama hâlâ en ucuz")
+
+
+func test_only_the_next_floor_unlock_counts_even_if_a_farther_floor_would_be_cheaper() -> void:
+	_service.floor_defs[2].unlock_cost = 50  # 2. kat, 1. kat açılmadan açılamaz
+	for row: int in _farm.get_floor(0).rows:
+		_service.buy_irrigation(0, row)
+		_service.buy_uv_lamp(0, row)
+		_service.buy_uv_lamp(0, row)
+	for i: int in 3:
+		_service.buy_drone(0)
+	for i: int in 3:
+		_service.buy_lab_uv()
+
+	assert_eq(_service.cheapest_purchase_cost(), 500, "açılamayan 2. katın ucuz fiyatı sayılmaz")

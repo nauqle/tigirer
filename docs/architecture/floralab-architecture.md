@@ -1,6 +1,7 @@
 # FloraLab: Cyber Harvest — Mimari
 
-> **Durum:** FAZ 1–5 uygulandı: genetik, çiftlik, ekonomi, otomasyon, mobil arayüz, Seed-Dex, şifreli kayıt, çevrimdışı kazanç.
+> **Durum:** FAZ 1–5 uygulandı (genetik, çiftlik, ekonomi, otomasyon, mobil arayüz, Seed-Dex, şifreli kayıt, çevrimdışı kazanç) ve üstüne **cila turu**:
+> tasarım dili (`design/design-language.md`), yeni yazı tipleri + ikon seti, Türkçe/İngilizce, hareket dili, hedef sistemi, FLORA kurgusu.
 > Android release APK dışa aktarıldı ve paket/imza/açılış denetimi yapıldı (gerçek cihazda denenmedi: bkz. bölüm 15).
 > **Motor:** Godot 4.7.2 · GDScript (statik tipli) · GL Compatibility oluşturucu · Android dikey 1080×1920.
 > **Tasarım kaydı:** `design/game-brief.md` (şablonun `minimal` kipi: ayrı GDD yok, kısa özet ve bu belge).
@@ -39,34 +40,39 @@ res://
 │   │   ├── automation/                   FAZ 4: automation_service (sulama/UV/dron/kat/lab UV satın alma), equipment_def, automation_config,
 │   │   │                                 drone_agent (durum makinesi), drone_service
 │   │   ├── dex/seed_dex.gd               FAZ 5: keşfedilen türler/çeşitler
+│   │   ├── goals/                        goal_def (veri), goal_service (sıralı hedef zinciri, ilerleme, ödül, kayıt)
 │   │   ├── save/                         FAZ 5: save_manager (şifreli, atomik), offline_progress, offline_report, game_settings
 │   │   └── game/                         FAZ 5: game_session (kompozisyon kökü + komutlar), game_catalog (tüm veri), command_result
-│   ├── ui/                               FAZ 2/5: oyuncuya dönük arayüz (yalnızca gösterir; oyunu GameSession komutlarıyla değiştirir)
-│   │   ├── main.gd / main.tscn           ana sahne: HUD, 5 sekme, ayarlar, çevrimdışı özeti, bildirim
-│   │   ├── common/                       ui_theme (yazı ölçeği + renk körlüğü), ui_kit, game_panel, plant_preview, gene_summary, toast_layer, city_backdrop
-│   │   ├── hud/hud_bar.gd                kredi, gün, hız, menü, itibar, haber şeridi
-│   │   ├── panels/                       farm_panel, lab_panel, market_panel, dex_panel, upgrades_panel, settings_overlay, offline_popup
-│   │   ├── farm/                         farm_view (TileMapLayer + saksılar + kaydırma), farm_tiles, pot_overlay, drone_layer
-│   │   ├── fx/harvest_fx.gd              hasat parçacığı, kombo ve "+N" yazıları
-│   │   └── audio/                        audio_service (olaydan ses), sfx_bank (kodla üretilen sesler)
+│   ├── ui/                               oyuncuya dönük arayüz (yalnızca gösterir; oyunu GameSession komutlarıyla değiştirir)
+│   │   ├── main.gd / main.tscn           ana sahne: manzara, HUD, 5 sekme, alt gezinme, ayarlar/hedefler/açılış kartı, çevrimdışı özeti, bildirim
+│   │   ├── common/                       TASARIM DİLİ: ui_tokens, ui_theme, ui_fonts, ui_icons, ui_motion, ui_format, localization, ui_kit;
+│   │   │                                 bileşenler: fx_button, price_button, credit_tag, nav_bar, toggle_switch, segmented_control, progress_ring,
+│   │   │                                 level_pips, price_chart, flora_bubble, seed_card, sheet_overlay, toast_layer, plant_preview, gene_summary,
+│   │   │                                 goal_text, night_backdrop + skyline_layer (gün-gece manzarası), game_panel
+│   │   ├── hud/hud_bar.gd                kredi (sayarak), gün çizgisi, hız, menü, itibar, hedef çipi, haber şeridi
+│   │   ├── panels/                       farm, lab, market, dex, upgrades, goals_overlay, settings_overlay, intro_overlay, offline_popup
+│   │   ├── farm/                         farm_view (cam çerçeve, kat geçişi), farm_tiles, pot_overlay (akış, ışıltı), drone_layer
+│   │   ├── fx/harvest_fx.gd              parçacık, yazı, halka dalgası, su sıçraması, HUD'a uçan sikkeler
+│   │   └── audio/                        audio_service, haptics_service (titreşim), sfx_bank (kodla üretilen sesler)
 │   └── dev/                              Geliştirici sahneleri (dışa aktarmada yok): genetics_lab, farm_dev, ui_showcase
 │
 ├── assets/
-│   ├── art/                              icon.svg · plants/{stems,leaves,fruits}/ 15 gri SVG parça · farm/farm_tiles.svg (TileSet atlası)
+│   ├── art/                              icon.svg (+ splash.png) · icons/ 42 SVG ikon · plants/{stems,leaves,fruits}/ 15 gri SVG parça · farm/farm_tiles.svg
+│   ├── fonts/                            Bricolage Grotesque + Nunito Sans (değişken, SIL OFL) ve lisansları
 │   ├── data/                             veri odaklı içerik (kod değişmeden çoğaltılır)
 │   │   ├── genetics/                     default_ruleset.tres · parts/ (15) · mutations/ (6) · seeds/ (4 başlangıç tohumu)
 │   │   ├── farm/default_farm_config.tres · economy/default_economy_config.tres + events/ (9) + orders/ (9)
-│   │   ├── automation/default_automation_config.tres · equipment/ (4) · floors/ (4 kat)
+│   │   ├── automation/default_automation_config.tres · equipment/ (4) · floors/ (4 kat) · goals/ (15 hedef)
 │   │   └── game_catalog.tres             GameCatalog: yukarıdakilerin tümünü toplar (betikle üretilir)
-│   ├── i18n/strings.csv                  tek sütun (tr), ~120 anahtar; derlenen strings.tr.translation git'te YOK (içe aktarmada üretilir)
-│   └── shaders/canvas_plant_tint.gdshader
+│   ├── i18n/{strings,content}.csv        keys,tr,en: arayüz metinleri ve oyun içeriği adları; derlenen *.translation git'te YOK (içe aktarmada üretilir)
+│   └── shaders/                          canvas_plant_tint (bitki parlaması), skyline_windows (titreşen pencereler)
 │
 ├── tests/                                kod kökünün DIŞINDA: unit/{core,genetics,farm,economy,automation,dex,save,ui}, integration/{genetics,plants,farm,economy,
 │                                         automation,game,ui}, support/ (test_case, test_runner, *_fixtures), smoke/critical-paths.md
-├── tools/                                run_tests.sh, capture_screenshot.sh, capture_faz5_evidence.sh, setup-godot-android.sh, art/ (SVG üretici betikler)
+├── tools/                                run_tests.sh, capture_screenshot.sh, capture_ui_evidence.sh, setup-godot-android.sh, art/ (make_icons, make_farm_tiles)
 ├── docs/architecture/                    bu belge
-├── design/game-brief.md                  tasarım kaydı
-└── production/qa/evidence/               retained ekran görüntüleri: faz1-plant-instance/, faz2-farm/, faz5-ui/ (README + stamp.txt)
+├── design/                               game-brief.md (tasarım kaydı) · design-language.md (tasarım dili)
+└── production/qa/evidence/               retained ekran görüntüleri: faz1-plant-instance/, faz2-farm/, ui-polish/ (README + stamp.txt)
 ```
 
 Godot'un görmediği (`.gdignore`) klasörler: `design/`, `docs/`, `production/`, `tools/`, `studio-tests/`,
@@ -279,7 +285,7 @@ Tüm sayılar `assets/data/farm/default_farm_config.tres` (`FarmConfig`) içinde
 - **Zaman** `TimeManager`: gün = 300 sn oyun saati; hız 1/2/5.
 - **Çizim** `FarmView`: `TileMapLayer` ızgarası (SVG atlas, `farm_tiles.svg`), saksı üstüne `PlantInstance`, su/büyüme çubukları (`PotOverlay`),
   UV lambası ışığı, `HarvestFx` (parçacık, kombo yazısı), `DroneLayer`. "Hareketi azalt" açıkken parçacık/sarsıntı kapanır.
-- **Ses** `AudioService` olaylardan ses çalar; sesler `SfxBank`'te koddan üretilir (ses dosyası yok).
+- **Ses** `AudioService` olaylardan ses çalar; sesler `SfxBank`'te koddan üretilir (ses dosyası yok). Ek olarak sessiz, dikişsiz bir sera uğultusu döngüsü (`SfxBank.make_ambience`) ses ayarına bağlı çalar.
 
 ## 9. Ekonomi kuralları (FAZ 3)
 
@@ -302,27 +308,39 @@ Sayılar `assets/data/economy/default_economy_config.tres` (`EconomyConfig`), ol
 - **Dron** `DroneAgent` AÇIK geçiş tablosu olan durum makinesidir: `IDLE → SEEKING → FLYING_TO → HARVESTING → RETURNING → IDLE`.
   Hedef saksı rezerve edilir (iki dron aynı bitkiye gitmez); hasat `drone_harvest_seconds` 0.7, hız 2.6 (ızgara birimi/sn). Dron, hasadı `FarmService.harvest(..., replant=true)` ile yapar.
 
-## 11. Oyun oturumu, kayıt, çevrimdışı ve arayüz (FAZ 5)
+## 11. Oyun oturumu, arayüz ve tasarım dili
 
-**Düğüm ağacı (`src/ui/main.tscn`)**
+**Düğüm ağacı (`src/ui/main.tscn`).** Arayüz DEĞİŞTİRİLEBİLİR bir kökün (`Ui`) altında kurulur; dil değişince bu kök atılıp yeni dille yeniden kurulur
+(etkin sekme ve açık ayarlar korunur). Manzara, `GameSession`, ses ve titreşim kökün dışındadır.
 
 ```text
 Main (Control)
-├── CityBackdrop · GameSession (Node) · AudioService (Node)
-├── SafeArea (MarginContainer)               güvenli alan (çentik/sistem çubuğu) kenar boşlukları
-│   └── Column (VBoxContainer)
-│       ├── HudBar                           kredi · gün · hız · menü · itibar · haber
-│       ├── Content (Control)                FarmPanel · LabPanel · MarketPanel · DexPanel · UpgradesPanel (yalnızca biri görünür)
-│       └── TabBar (HBoxContainer)           5 sekme (Çiftlik, Lab, Pazar, Seed-Dex, Geliştir)
-└── ToastLayer · SettingsOverlay · OfflinePopup
+├── NightBackdrop · GameSession (Node) · AudioService · HapticsService
+└── Ui (Control)
+    ├── SafeArea (MarginContainer)               güvenli alan (çentik/sistem çubuğu) kenar boşlukları
+    │   └── Column (VBoxContainer)
+    │       ├── HudBar                           kredi (sayarak) · gün çizgisi · hız · menü · itibar · hedef çipi · haber
+    │       ├── Content (Control)                FarmPanel · LabPanel · MarketPanel · DexPanel · UpgradesPanel (yalnızca biri görünür)
+    │       └── NavBar                           5 sekme, ikon + etiket, dikkat rozeti
+    └── ToastLayer · SettingsOverlay · GoalsOverlay · OfflinePopup · IntroOverlay
 ```
 
-**Kural:** arayüz oyunu DEĞİŞTİRMEZ; `GameSession` komutlarını (`plant_seed`, `harvest_pot`, `sell`, `fulfil_order`, `crossbreed`, `buy_*`, `unlock_floor`, ...) çağırır,
-dönen `CommandResult` (`ok`, `message_key`, `args`) bildirim olur. Tüm metin `tr("ANAHTAR")` ile gelir (`assets/i18n/strings.csv`, yedek dil `tr`);
-`tests/unit/ui/localization_keys_test.gd` koddaki bilinen önekli anahtar yazımlarını CSV ile karşılaştırır.
+**Kural:** arayüz oyunu DEĞİŞTİRMEZ; `GameSession` komutlarını (`plant_seed`, `harvest_pot`, `harvest_floor`, `sell`, `fulfil_order`, `crossbreed`, `buy_*`, `unlock_floor`, ...)
+çağırır, dönen `CommandResult` (`ok`, `message_key`, `args`) bildirim olur. Tüm metin `tr("ANAHTAR")` ile gelir; oyun verisi (.tres) de çeviri ANAHTARI tutar.
 
-**Erişilebilirlik:** yazı boyutu 4 kademe (×0.9 / ×1.0 / ×1.2 / ×1.4; `UiTheme` tür varyasyonları, sekme yazısı ölçeğin yalnızca %30'unu izler), renk körlüğü paleti
-(mavi iyi / turuncu kötü), hareketi azalt (parçacık, nabız, sarsıntı kapanır), 84 px dokunma hedefi, Android geri tuşu (pencere kapat → çiftliğe dön → çift basışla çık).
+**Tasarım dili** (`design/design-language.md`): belirteçler `UiTokens`, tema `UiTheme`, yazı tipleri `UiFonts` (Bricolage Grotesque başlık/sayı, Nunito Sans gövde; SIL OFL),
+ikonlar `UiIcons` (42 SVG, kredi renkli), hareket `UiMotion` (süreler `UiTokens.DUR_*`, hareketi azalt'ta hiçbir animasyon oynamaz), sayı biçimi `UiFormat` (dile duyarlı).
+Hiçbir panel renk/piksel/süre sabitlemez. Ekran başına tek birincil (klorofil) düğme kuralı ve anti-slop listesi belgededir.
+
+**Yerelleştirme:** `strings.csv` (arayüz) ve `content.csv` (oyun içeriği) `keys,tr,en`. `Localization.apply` dili seçer; ilk açılışta sistem dili (`GameSettings.default_language`: Türkçe ise
+Türkçe, değilse İngilizce), ayarlardan değişir. `localization_keys_test` şunları denetler: koddaki her anahtar tabloda, her satır iki dilde dolu, `%d/%s` işaretçileri iki dilde aynı,
+oyun verisindeki her anahtar çözülüyor, metinde yedek-font sembol glifi yok, paketlenen yazı tipleri her metin karakterini içeriyor.
+
+**Hedefler ve kurgu:** `GoalService` (15 hedef, `assets/data/goals/`): sıralı zincir, ilerleme tüm hedeflere birikir, ödül cüzdana yazılır, kayıtta tutulur. HUD çipi etkin hedefi, `GoalsOverlay`
+tümünü gösterir. **FLORA** (kulenin bakım yapay zekâsı) ipuçlarını (`FloraBubble`) ve ilk açılış kartını (`IntroOverlay`, bir kez) söyler.
+
+**Erişilebilirlik:** yazı boyutu 4 kademe (×0.9 / ×1.0 / ×1.2 / ×1.4), renk körlüğü paleti (mavi/turuncu, şekille destekli), hareketi azalt, 84 px dokunma hedefi, titreşim ayarı, "Hasat" tek dokunuş düğmesi,
+kontrast testle korunur (`ui_tokens_contrast_test`: bilgi taşıyan her renk WCAG AA), Android geri tuşu (pencere kapat → çiftliğe dön → çift basışla çık).
 
 **Kayıt (`SaveManager`):** durum sözlüğü → JSON → `{checksum: SHA-256, payload}` → `FileAccess.open_encrypted_with_pass` (AES). Yazma atomik:
 `.tmp`'ye yaz, doğrula, taşı; öncekini `.bak` yap. Okuma bozuk/sağlaması tutmayan dosyada yedeğe düşer. Otomatik kayıt 20 sn'de bir, uygulama duraklatılınca
@@ -341,15 +359,15 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
 - Koşucu: `bash tools/run_tests.sh [--filter=...]` (gdUnit4 stili çıkış kodları: 0 geçti, 100 başarısız, 105 yükleme hatası,
   2 test yok; Godot çıktısında `SCRIPT ERROR` varsa 1). gdUnit4 kurulumu kullanıcı onayı bekliyor (bkz. 15); test dosyaları gdUnit4'e geçişte adlandırmayı korur.
   Şu an **350 test** geçiyor (birim: genetik, çiftlik, ekonomi, otomasyon, Seed-Dex, kayıt, arayüz yardımcıları; entegrasyon: gerçek veri + gerçek sahneler,
-  `Main` arayüzü 20 test: dokunuş, kaydırma, satış, sipariş, çaprazlama, satın alma, ayarlar, geri tuşu, uzun ekran, en büyük yazı).
+  `Main` arayüzü: dokunuş, kaydırma, satış, sipariş, çaprazlama, satın alma, ayarlar, dil değişimi, rozetler, bildirim birleştirme, hedefler, açılış kartı, geri tuşu, uzun ekran, en büyük yazı iki dilde).
 - İstatistiksel testler tohumlu RNG ile deterministiktir. Testlerin gerçekten bir şey yakaladığı **mutasyon testiyle** (kodu bilerek bozup testin kırıldığını
   görerek) doğrulandı: FAZ 1 (`PlantInstance` 35/35), FAZ 2 (38/38), FAZ 3–4 (5 sağ kalan yeni testlerle kapatıldı ve yeniden çalıştırılarak doğrulandı) ve FAZ 5 mantığı
   (`OfflineProgress`, `SeedDex`, `SaveManager`, `GameSettings`: 46 mutant; ilk turda 15 sağ kaldı, yeni testlerle 44'ü yakalandı). Kalan ikisi: `op_budget_carry_unbounded`
   EŞDEĞER mutanttır (`minf(budget, 1.0)` döngüden sonra zaten < 1 olan değeri değiştirmez); `sm_no_verify` (yazılan dosyayı geri okuyup doğrulama) dosya sistemi
   hatası enjekte edilmeden sınanamaz ve savunma amaçlı bırakıldı. `GameSession` ve arayüz için sistematik mutasyon turu yapılmadı (`Main` entegrasyon testleri var).
-- Görsel kanıt: `production/qa/evidence/` altında `faz1-plant-instance/`, `faz2-farm/`, `faz5-ui/` (her birinde README ve `stamp.txt`). Yeniden üretmek için:
+- Görsel kanıt: `production/qa/evidence/` altında `faz1-plant-instance/`, `faz2-farm/`, `ui-polish/` (her birinde README ve `stamp.txt`). Yeniden üretmek için:
   `bash tools/capture_screenshot.sh <sahne.tscn> <çıkış.png> [--frames=N] -- <seçenekler>` (`CAPTURE_SIZE=1080x2400` ile uzun ekran),
-  FAZ 5 setinin tamamı için `bash tools/capture_faz5_evidence.sh`.
+  arayüz setinin tamamı (iki dil, üç boyut/ölçek, renk körlüğü, hareketi azalt) için `bash tools/capture_ui_evidence.sh`.
 - Ayrıştırma denetimi: şablonun `godot-parse-check.gd` betiği (`src/` ve `tests/` altındaki tüm betikler temiz).
 - Android: `godot --headless --export-release "Android Release" build/floralab-1.0.0.apk` (imza bilgisi `GODOT_ANDROID_KEYSTORE_RELEASE_*` ortam
   değişkenlerinden; anahtar deposu depoda YOK). Denetim: `apksigner verify` (v2+v3 geçerli), `aapt2 dump badging` (paket `com.tigirer.floralab`, sürüm 1.0.0/1,
@@ -382,6 +400,14 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
 | 20 | Sekme yazısı ölçeğin %30'unu izler, "Laboratuvar" → "Lab" | en büyük yazıda beş sekme 1067 px istiyordu (alan 1032); taşma tüm sütunu sağa itiyordu. Gerileme testi var |
 | 21 | Release ön ayarı: `exclude_filter` ile testler/belgeler/geliştirici sahneleri dışarıda | APK 26,9 MB; derlenmiş betikler (`.gdc`) |
 | 22 | Release imzası ortam değişkenlerinden, anahtar deposu depoda yok | kimlik bilgisi sızıntısı olmasın. Anahtar deposu geçici kapta üretildi: güncelleme zinciri için kullanıcı kendi anahtarını üretip yeniden imzalamalı |
+| 23 | Tasarım dili belgesi + belirteçler: "Gece Serası" | "AI slop"u (tek tip turkuaz kart, her düğme birincil, sembol glifli metin) kural olarak yasaklamak için; ekran başına tek birincil düğme, kademeyle ayrışan yüzeyler. `design/design-language.md` |
+| 24 | Yazı tipleri: Bricolage Grotesque + Nunito Sans (değişken, OFL), paketlenir | cihazın varsayılan fontuna bağımlılık yok; Türkçe İ/ı/Ğ/ğ/Ş/ş testle doğrulanır. Sembol glifleri (◆▲▼★✓) yasak, SVG ikon kullanılır (yedek font garantisi yok) |
+| 25 | Oyun verisi (.tres) çeviri ANAHTARI tutar, `tr()` gösterimde | iki dil aynı veriyle; kayıtta eski düz metin (anahtar olmayan) olduğu gibi görünür (geriye uyum). `content.csv` ayrı dosya: tasarımcı içeriği arayüzden ayrı düzenler |
+| 26 | Dil değişince arayüz kökü baştan kurulur | panellerin her statik etiketini yeniden çevirmek yerine tek yol; durum `GameSession`'dadır, kayıp yok. Sistem dili yalnızca ilk açılışta okunur |
+| 27 | `PriceButton`: içerik satırı + `custom_minimum_size` eşitlemesi | `Button` kendi `get_minimum_size`'ını yerel kodda tanımlar, betik sanal metodu çağrılmaz; en büyük yazıda düğmeler çöküyordu (testle yakalandı, `main_screens_test`) |
+| 28 | Hedefler veri odaklı ve sıralı; ilerleme tüm hedeflere birikir | oturum hedefsiz kalmasın ("Player goal" tamamlanmışlık); sıradaki hedef önceden tamamsa art arda tamamlanır |
+| 29 | `HapticsService` ayrı düğüm, titreşim enjekte edilebilir | ayardaki "Titreşim" anahtarı önceden hiçbir şey yapmıyordu; artık olaydan (hasat, ödül, hata) darbe çıkar |
+| 30 | Pazar fiyat geçmişi `MarketService`'te (meyve başına son 24 endeks örneği, kayda dahil) | mini grafikler gerçek veriyi çizer; ekonomi kuralları değişmedi |
 
 ## 15. Açık sorular ve bilinen sınırlar
 
@@ -390,8 +416,8 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
 2. **Gerçek cihaz:** APK paket/imza/başsız açılış olarak doğrulandı; bir Android cihazda dokunma hissi, performans, güvenli alan (çentik) ve geri tuşu denenmedi.
 3. **Performans bütçeleri** (`project.yaml`) bilinçli olarak boş: hedef cihaz sınıfı belirlenince doldurulacak.
 4. **Sanat:** SVG parçalar yer tutucu kalitede ama oyun içi kullanıma uygun; elle çizilmiş sanat gelirse `PlantPartDef.texture` değişir, kod değişmez.
-5. **Dil:** yalnızca Türkçe (`tr`); yeni dil = CSV'ye sütun + `locale/translations` kaydı.
-6. **Ses:** sesler kodla üretilen yer tutucu seslerdir; ses tasarımcısı eli değmedi.
+5. **Dil:** Türkçe ve İngilizce; yeni dil = iki CSV'ye sütun + `GameSettings.LANGUAGES` + `project.godot` çeviri listesi. İngilizce metinlerin dil bilgisi/ton denetimi ana dili İngilizce olan biri tarafından yapılmadı.
+6. **Ses:** sesler kodla üretilen yer tutucu seslerdir (efektler + alçak sera uğultusu); ses tasarımcısı eli değmedi, müzik yok.
 7. **Mutasyon testi kapsamı:** FAZ 1–5 mantık sınıfları mutasyonla doğrulandı (bölüm 13); `GameSession` (komut katmanı) ve arayüz panelleri için sistematik mutasyon turu yok: bunlar entegrasyon testleriyle (`game_session_flow_test`, `main_screens_test`) ve ekran görüntüleriyle sınandı.
 8. **Ekonomi/denge:** insan oynatması yok (karar 17). Çevrimdışı dönüşte piyasa/siparişler tek tikle ilerler (ayrıntılı çevrimdışı piyasa benzetimi yok).
 9. **Güncelleme imzası:** release anahtar deposu depoda yok (karar 22); mağaza yayını için kendi anahtarınla imzalamak gerekir.

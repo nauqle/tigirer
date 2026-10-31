@@ -14,12 +14,12 @@ TAB_LAB,Lab,Lab
 TAB_MARKET,Pazar,Market
 TAB_DEX,Seed-Dex,Seed-Dex
 TAB_UPGRADES,Geliştir,Upgrade
-FARM_WATER_ALL,Hepsini sula,Water all
-FARM_PLANT_ALL,Boşlara ek,Plant empty
+FARM_WATER_ALL,Sula,Water
+FARM_PLANT_ALL,Ekim,Plant
 FARM_LOCKED,Bu kat henüz kapalı.,This floor is still sealed.
 FARM_GO_UPGRADES,Geliştir'e git,Open upgrades
 FARM_NO_SEEDS,Tohumun kalmadı. Lab'da çaprazla ya da hasattan dönen tohumları kullan.,Out of seeds. Crossbreed in the lab or reuse seeds that come back from harvests.
-HINT_PLANT,"Alttan bir tohum seç, sonra boş saksılara dokun. Ya da «Boşlara ek»e bas.","Pick a seed below, then tap an empty pot. Or hit “Plant empty”."
+HINT_PLANT,"Alttan bir tohum seç, sonra boş saksılara dokun. Ya da «Ekim»e bas.","Pick a seed below, then tap an empty pot. Or hit “Plant”."
 HINT_WATER,"Bir saksı kurumak üzere. Dokun, sulayalım.",A pot is running dry. Tap it and I'll water it.
 HINT_SWIPE,Olgun bitkiler hazır. Parmağını üzerlerinden kaydır: zincir uzadıkça kombo büyür.,"Ripe plants are ready. Swipe through them: the longer the chain, the bigger the combo."
 HINT_SELL,Hasat ettiklerini Pazar'da sat. Fiyatlar hiç durmuyor.,Sell your harvest at the Market. Prices never sit still.
@@ -179,3 +179,6 @@ GOAL_HARVEST_200_TITLE,Hasat makinesi,Harvest Machine
 GOAL_HARVEST_200_DESC,Toplam %s bitki hasat et.,Harvest %s plants in total.
 GOAL_THIRTY_SPECIES_TITLE,Yaşayan ansiklopedi,Living Encyclopedia
 GOAL_THIRTY_SPECIES_DESC,Seed-Dex'te %s yeni tür keşfet.,Discover %s new species for the Seed-Dex.
+FARM_HARVEST_ALL,Hasat,Harvest
+ERR_NOTHING_TO_HARVEST,Hasada hazır bitki yok.,Nothing is ripe yet.
+MSG_HARVESTED_N,%s bitki hasat edildi.,Harvested %s plants.

@@ -33,6 +33,8 @@ func setup(text_value: String, amount: int, variation: StringName = &"", icon_na
 	_row.offset_left = 10.0
 	_row.offset_right = -10.0
 	add_child(_row)
+	# İçerik satırının en az boyutu değişince (yazı ölçeği, dil, fiyat) düğmenin önbellekteki en az boyutu da tazelenir.
+	_row.minimum_size_changed.connect(_sync_min_width)
 	_icon = UiKit.icon(icon_name if icon_name != &"" else &"info", UiTokens.ICON_SM)
 	_icon.visible = icon_name != &""
 	_row.add_child(_icon)
@@ -45,6 +47,7 @@ func setup(text_value: String, amount: int, variation: StringName = &"", icon_na
 	_row.add_child(_tag)
 	set_price(amount)
 	_recolor()
+	_sync_min_width.call_deferred()
 
 
 func set_caption(text_value: String) -> void:
@@ -74,11 +77,12 @@ func is_enabled() -> bool:
 	return _enabled
 
 
-## Düğmenin kendi metni boş olduğundan en az genişlik içerik satırından gelir (aksi halde SHRINK düzenlerde çöker).
-func _get_minimum_size() -> Vector2:
+## Düğmenin kendi metni boş olduğundan en az genişlik içerik satırından gelir. (`Button` kendi `get_minimum_size`'ını yerel kodda
+## tanımladığından betik sanal metodu çağrılmaz; bu yüzden değer `custom_minimum_size.x` ile eşitlenir.)
+func _sync_min_width() -> void:
 	if _row == null:
-		return Vector2.ZERO
-	return Vector2(_row.get_combined_minimum_size().x + 44.0, 0.0)
+		return
+	custom_minimum_size.x = _row.get_combined_minimum_size().x + 44.0
 
 
 func _notification(what: int) -> void:

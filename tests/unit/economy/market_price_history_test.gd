@@ -68,6 +68,20 @@ func test_the_history_survives_a_save_and_an_old_save_without_it_restarts_neutra
 	assert_eq(fresh.history_of(FRUIT).size(), 1, "eski kayıtta geçmiş yok: tek örnekle başlar")
 
 
+func test_a_saved_history_longer_than_the_current_limit_is_trimmed_to_the_newest_samples_on_load() -> void:
+	var saved: Dictionary = _market.to_dict()
+	var long_history: Array = [9.0, 8.0, 7.0, 1.1, 1.2, 1.3, 1.4]  # sınırın (4) üstünde; en yeniler sonda
+	(saved["history"] as Dictionary)[String(FRUIT)] = long_history
+	var restored: MarketService = EconomyFixtures.make_market(_config)
+
+	restored.load_dict(saved)
+
+	var history: PackedFloat32Array = restored.history_of(FRUIT)
+	assert_eq(history.size(), 4, "ayarlanan sınıra kırpıldı")
+	assert_almost_eq(history[0], 1.1, EPSILON, "en eski örnekler atıldı")
+	assert_almost_eq(history[3], 1.4, EPSILON, "en yeni örnek korundu")
+
+
 func test_an_event_starting_or_ending_records_the_new_index_immediately() -> void:
 	_market.start_event(EconomyFixtures.make_event(&"boom", MarketEventDef.Scope.FRUIT, [FRUIT] as Array[StringName], 1.5, 5.0))
 	assert_eq(_market.history_of(FRUIT).size(), 2, "olay başlayınca fiyat sıçraması grafikte görünür")

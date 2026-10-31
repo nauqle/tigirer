@@ -46,6 +46,14 @@ func set_amount(value: int, animated: bool = false) -> void:
 	_first = false
 
 
+## Tutar tamamen yazılınca bu göstergenin kaplayacağı genişlik. Sayma animasyonu sürerken düğümün gerçek boyutu eskidir; yanına
+## konacak şeyler (HUD'daki "+N") bu değere göre yerleşir.
+func final_width() -> float:
+	var font: Font = _label.get_theme_font("font")
+	var text_width: float = font.get_string_size(UiFormat.number(amount), HORIZONTAL_ALIGNMENT_LEFT, -1.0, _label.get_theme_font_size("font_size")).x
+	return _icon.get_combined_minimum_size().x + float(get_theme_constant("separation")) + text_width
+
+
 ## Etiket düğümü (renk geçersiz kılma vb. için).
 func label() -> Label:
 	return _label

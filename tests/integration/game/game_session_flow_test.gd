@@ -465,3 +465,63 @@ func _goal(session: GameSession, id: StringName) -> GoalDef:
 		if def.id == id:
 			return def
 	return null
+
+
+# ------------------------------------------------------- tek dokunuşla toplu hasat
+
+
+func test_harvest_floor_cuts_every_ripe_plant_as_one_combo_chain() -> void:
+	var session: GameSession = _session()
+	session.plant_all(0, REED)
+	for pot_index: int in 3:
+		session.farm.get_pot(0, pot_index).growth = 1.0
+	var swipes: Array[int] = []
+	var listener: Callable = func(count: int, _value: float) -> void: swipes.append(count)
+	SignalBus.harvest_swipe_finished.connect(listener)
+
+	var result: CommandResult = session.harvest_floor(0)
+	SignalBus.harvest_swipe_finished.disconnect(listener)
+
+	assert_true(result.ok)
+	assert_eq(result.message_key, "MSG_HARVESTED_N")
+	assert_eq(result.args, [3] as Array)
+	for pot_index: int in 3:
+		assert_true(session.farm.get_pot(0, pot_index).is_empty(), "saksı %d biçildi" % pot_index)
+	assert_eq(swipes, [3] as Array[int], "tek zincir olarak özetlendi (kombo ödülü)")
+
+
+func test_harvest_floor_leaves_unripe_plants_and_refuses_when_nothing_is_ripe() -> void:
+	var session: GameSession = _session()
+	session.plant_all(0, REED)
+	session.farm.get_pot(0, 0).growth = 1.0
+
+	var result: CommandResult = session.harvest_floor(0)
+
+	assert_true(result.ok)
+	assert_eq(result.args, [1] as Array, "yalnızca olgun olan")
+	assert_false(session.farm.get_pot(0, 1).is_empty(), "olgun olmayan yerinde")
+	assert_eq(session.harvest_floor(0).message_key, "ERR_NOTHING_TO_HARVEST")
+
+
+func test_harvest_floor_refuses_a_locked_or_invalid_floor() -> void:
+	var session: GameSession = _session()
+
+	assert_eq(session.harvest_floor(1).message_key, "ERR_FLOOR_LOCKED")
+	assert_eq(session.harvest_floor(99).message_key, "ERR_INVALID_TARGET")
+
+
+func test_harvest_floor_starts_a_fresh_combo_even_after_an_abandoned_swipe() -> void:
+	var session: GameSession = _session()
+	session.plant_all(0, REED)
+	for pot_index: int in 3:
+		session.farm.get_pot(0, pot_index).growth = 1.0
+	session.begin_swipe()
+	session.swipe_harvest(0, 0)  # parmak kalktı, kaydırma bitirilmedi: sayaç 1'de kaldı
+	var swipes: Array[int] = []
+	var listener: Callable = func(count: int, _value: float) -> void: swipes.append(count)
+	SignalBus.harvest_swipe_finished.connect(listener)
+
+	session.harvest_floor(0)
+	SignalBus.harvest_swipe_finished.disconnect(listener)
+
+	assert_eq(swipes, [2] as Array[int], "toplu hasat kalan iki bitkiyle yeni zincir başlatır, eski sayacı devralmaz")

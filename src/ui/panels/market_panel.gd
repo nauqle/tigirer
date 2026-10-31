@@ -154,10 +154,16 @@ func _rebuild_news() -> void:
 		_event_defs.append(active.def)
 		_news_box.add_child(row)
 		_news_box.add_child(UiKit.label(tr(active.def.body), &"MutedLabel", true))
+	# Etkin olay yukarıda ayrıntısıyla durur; geçmiş listesi yalnızca bitmiş olayları anar (aynı başlık iki kez görünmez).
+	var active_headlines: Array[String] = []
+	for active: MarketService.ActiveEvent in market.active_events:
+		active_headlines.append(active.def.headline)
 	var shown: int = 0
 	for headline_key: String in market.news:
 		if shown >= 3:
 			break
+		if active_headlines.has(headline_key):
+			continue
 		_news_box.add_child(UiKit.icon_label(&"news", tr(headline_key), &"SmallLabel", UiTokens.TEXT_DIM, UiTokens.ICON_SM * 0.7))
 		shown += 1
 	_update_timers()
@@ -217,7 +223,7 @@ func _make_stack_row(stack: ProduceStack) -> Control:
 	one.pressed.connect(func() -> void: UiKit.report(session.sell(stack.signature, 1)))
 	buttons.add_child(one)
 	var all: PriceButton = PriceButton.new()
-	all.setup(tr("MARKET_SELL_STACK"), session.market.quote(stack, stack.count), &"PrimaryButton", &"", 68.0)
+	all.setup(tr("MARKET_SELL_STACK"), session.market.quote(stack, stack.count), &"BuyButton", &"", 68.0)
 	all.pressed.connect(func() -> void: UiKit.report(session.sell_all_of(stack.signature)))
 	buttons.add_child(all)
 	return card
@@ -271,7 +277,7 @@ func _make_order_card(order: Order) -> Control:
 	footer.add_child(have_label)
 	footer.add_child(UiKit.spacer())
 	var deliver: PriceButton = PriceButton.new()
-	deliver.setup(tr("ORDER_DELIVER"), order.reward, &"PrimaryButton" if ready else &"", &"check", 76.0)
+	deliver.setup(tr("ORDER_DELIVER"), order.reward, &"BuyButton" if ready else &"", &"check", 76.0)
 	deliver.set_enabled(ready)
 	deliver.pressed.connect(func() -> void: UiKit.report(session.fulfil_order(order.id)))
 	footer.add_child(deliver)

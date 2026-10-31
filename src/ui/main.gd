@@ -55,6 +55,7 @@ var _nav: NavBar
 var _active_tab: int = 0
 var _hud: HudBar
 var _audio: AudioService
+var _haptics: HapticsService
 var _toasts: ToastLayer
 var _settings: SettingsOverlay
 var _goals: GoalsOverlay
@@ -84,6 +85,8 @@ func _ready() -> void:
 	move_child(_backdrop, 0)
 	_audio = AudioService.new()
 	add_child(_audio)
+	_haptics = HapticsService.new()
+	add_child(_haptics)
 
 	session.start()
 	_resolve_language()
@@ -231,6 +234,7 @@ func _apply_settings() -> void:
 	UiMotion.reduce_motion = settings.reduce_motion
 	theme = UiTheme.build(settings.text_scale(), settings.colorblind)
 	_audio.enabled = settings.sound_on
+	_haptics.enabled = settings.vibration_on
 	_toasts.reduce_motion = settings.reduce_motion
 	_toasts.colorblind = settings.colorblind
 	_hud.set_colorblind(settings.colorblind)

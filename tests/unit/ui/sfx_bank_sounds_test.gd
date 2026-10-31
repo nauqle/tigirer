@@ -25,3 +25,20 @@ func test_generation_is_deterministic() -> void:
 func test_different_sounds_are_actually_different() -> void:
 	assert_ne(SfxBank.make(SfxBank.Id.SNIP).data, SfxBank.make(SfxBank.Id.PLANT).data)
 	assert_ne(SfxBank.make(SfxBank.Id.COIN).data, SfxBank.make(SfxBank.Id.ERROR).data)
+
+
+func test_the_ambience_is_a_quiet_seamless_loop_of_several_seconds() -> void:
+	var stream: AudioStreamWAV = SfxBank.make_ambience()
+
+	assert_eq(stream.loop_mode, AudioStreamWAV.LOOP_FORWARD, "döngü")
+	var count: int = stream.data.size() / 2
+	assert_eq(stream.loop_begin, 0)
+	assert_eq(stream.loop_end, count, "döngü tüm akışı kapsar")
+	assert_between(float(count) / float(SfxBank.SAMPLE_RATE), 4.0, 12.0, "birkaç saniyelik döngü")
+	var peak: int = 0
+	for i: int in count:
+		peak = maxi(peak, absi(stream.data.decode_s16(i * 2)))
+	assert_between(float(peak), 1500.0, 12000.0, "duyulur ama alçak (tepe %d / 32767)" % peak)
+	var seam: int = absi(stream.data.decode_s16((count - 1) * 2) - stream.data.decode_s16(0))
+	assert_true(seam < 1200, "döngü ek yerinde sıçrama yok (%d)" % seam)
+	assert_eq(SfxBank.make_ambience().data, stream.data, "deterministik")

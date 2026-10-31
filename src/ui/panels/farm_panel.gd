@@ -17,6 +17,7 @@ var _hint: FloraBubble
 var _seed_row: HBoxContainer
 var _seed_group: ButtonGroup = ButtonGroup.new()
 var _water_button: FxButton
+var _harvest_button: FxButton
 var _plant_button: FxButton
 var _refresh_timer: Timer
 
@@ -84,6 +85,10 @@ func _build() -> void:
 	_water_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_water_button.pressed.connect(_on_water_all)
 	actions.add_child(_water_button)
+	_harvest_button = UiKit.button(tr("FARM_HARVEST_ALL"), &"", 80.0, &"plant")
+	_harvest_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_harvest_button.pressed.connect(_on_harvest_all)
+	actions.add_child(_harvest_button)
 	_plant_button = UiKit.button(tr("FARM_PLANT_ALL"), &"PrimaryButton", 80.0, &"seed")
 	_plant_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_plant_button.pressed.connect(_on_plant_all)
@@ -153,6 +158,7 @@ func _show_floor(index: int, direction: int = 0) -> void:
 	_floor_icon.modulate = UiTokens.ACCENT if unlocked else UiTokens.TEXT_DIM
 	_lock_card.visible = not unlocked
 	_water_button.disabled = not unlocked
+	_harvest_button.disabled = true
 	_plant_button.disabled = not unlocked
 	_update_hint()
 
@@ -192,6 +198,10 @@ func _on_harvest_requested(floor_index: int, pot_index: int) -> void:
 
 func _on_water_all() -> void:
 	UiKit.report(session.water_floor(_floor_index))
+
+
+func _on_harvest_all() -> void:
+	UiKit.report(session.harvest_floor(_floor_index))
 
 
 func _on_plant_all() -> void:
@@ -248,6 +258,7 @@ func _update_hint() -> void:
 			mature += 1
 		elif pot.water < session.catalog.farm_config.water_growth_threshold + session.catalog.farm_config.water_growth_ramp:
 			thirsty += 1
+	_harvest_button.disabled = mature == 0
 	var key: String = ""
 	if not floor_state.unlocked:
 		key = ""

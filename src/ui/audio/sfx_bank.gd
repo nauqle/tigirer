@@ -26,6 +26,9 @@ enum Id {
 }
 
 const SAMPLE_RATE: int = 22050
+## Ortam sesi döngüsünün uzunluğu (saniye) ve uç uca bindirme süresi.
+const AMBIENCE_SECONDS: float = 8.0
+const AMBIENCE_FADE_SECONDS: float = 0.8
 
 
 ## Verilen kimliğin ses akışını üretir.
@@ -52,6 +55,37 @@ static func make(id: Id) -> AudioStreamWAV:
 		Id.UPGRADE:
 			return _to_stream(_notes([392.0, 587.0, 784.0], 0.1, 0.55, 5.5))
 	return _to_stream(PackedFloat32Array([0.0]))
+
+
+## Sera ortam sesi: alçak uğultu (55 ve 82.5 Hz, yavaş nefes alan genlik) + hafif, süzülmüş hava gürültüsü. Döngü uçları eşit güçle
+## birbirine bindirilir (dikişsiz). Alçak ve sürekli olduğundan oyuncuyu yormaz; deterministiktir.
+static func make_ambience() -> AudioStreamWAV:
+	var loop_count: int = int(SAMPLE_RATE * AMBIENCE_SECONDS)
+	var fade_count: int = int(SAMPLE_RATE * AMBIENCE_FADE_SECONDS)
+	var raw: PackedFloat32Array = PackedFloat32Array()
+	raw.resize(loop_count + fade_count)
+	var noise_state: int = 4242
+	var smooth: float = 0.0
+	for i: int in raw.size():
+		var t: float = float(i) / float(SAMPLE_RATE)
+		noise_state = (noise_state * 1103515245 + 12345) & 0x7FFFFFFF
+		var noise: float = float(noise_state) / float(0x7FFFFFFF) * 2.0 - 1.0
+		smooth += (noise - smooth) * 0.035
+		var breathe: float = 0.75 + 0.25 * sin(TAU * t / AMBIENCE_SECONDS)
+		var hum: float = sin(TAU * 55.0 * t) * 0.07 + sin(TAU * 82.5 * t) * 0.035 * (0.6 + 0.4 * sin(TAU * 2.0 * t / AMBIENCE_SECONDS))
+		raw[i] = hum * breathe + smooth * 0.12
+	var samples: PackedFloat32Array = PackedFloat32Array()
+	samples.resize(loop_count)
+	for i: int in loop_count:
+		samples[i] = raw[i]
+	for i: int in fade_count:
+		var blend: float = float(i) / float(fade_count)
+		samples[i] = raw[i] * sin(blend * PI * 0.5) + raw[loop_count + i] * cos(blend * PI * 0.5)
+	var stream: AudioStreamWAV = _to_stream(samples)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = loop_count
+	return stream
 
 
 ## Gürültü patlaması + yükselen kısa sinüs: "çıt".

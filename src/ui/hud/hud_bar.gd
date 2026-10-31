@@ -148,13 +148,18 @@ func _on_credits_changed(credits: int) -> void:
 	_last_credits = credits
 
 
+## Yüzen "+N" etiketlerini hemen kaldırır.
+func clear_floats() -> void:
+	UiKit.clear(_float_layer)
+
+
 ## "+N" yükselip kaybolur.
 func _spawn_gain(amount: int) -> void:
 	if UiMotion.reduce_motion or not is_inside_tree() or amount < 1:
 		return
 	var gain: Label = UiKit.label("+%s" % UiFormat.number(amount), &"GoldLabel")
 	_float_layer.add_child(gain)
-	gain.global_position = _credits.global_position + Vector2(_credits.size.x + 14.0, 4.0)
+	gain.global_position = _credits.global_position + Vector2(_credits.final_width() + 14.0, 4.0)
 	var tween: Tween = gain.create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(gain, "position:y", gain.position.y - 26.0, UiTokens.DUR_SLOW * 2.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

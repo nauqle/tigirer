@@ -4,7 +4,7 @@ Bu depoda iki oyun ve onları geliştirmek için kurulu bir çerçeve var.
 
 | Oyun | Motor | Klasörler | Durum |
 |---|---|---|---|
-| **FloraLab: Cyber Harvest**: dikey çiftlik, bitki genetiği, otomasyon | Godot 4.7.2 (GDScript) | `src/`, `assets/`, `tests/`, `project.godot` | FAZ 1–5 hazır, release APK 1.0.0 dışa aktarıldı |
+| **FloraLab: Cyber Harvest**: dikey çiftlik, bitki genetiği, otomasyon | Godot 4.7.2 (GDScript) | `src/`, `assets/`, `tests/`, `project.godot` | FAZ 1–5 hazır, cila turu tamam, release APK 1.1.0 dışa aktarıldı |
 | **Son Fener**: tek parmakla savunma | Java, yerel Android | `app/`, `releases/` | Tamam (1.0), aşağıda |
 
 Çerçeve: [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) 1.2.0, Godot için yapılandırıldı (`.claude/`, `CLAUDE.md`, `project.yaml`).
@@ -14,11 +14,14 @@ Bu depoda iki oyun ve onları geliştirmek için kurulu bir çerçeve var.
 Terk edilmiş bir gökdelenin katlarında hidroponik bir çiftlik kur; iki tohumu çaprazla, ebeveyn genlerini (büyüme hızı, su tüketimi, pazar değeri, renk) aktar, **%5 ihtimalle** nadir bir mutasyon yakala; bitkileri kaydırarak hasat et, dronlara devret, dinamik borsada sat, Seed-Dex'i doldur. Dikey (1080×1920) Android oyunu.
 
 <p>
-  <img src="production/qa/evidence/faz5-ui/02-farm.png" width="200" alt="Çiftlik sekmesi: kat seçici, büyüme evreleri, tohum şeridi">
-  <img src="production/qa/evidence/faz5-ui/02-lab.png" width="200" alt="Laboratuvar: iki ebeveyn ve çaprazlama">
-  <img src="production/qa/evidence/faz5-ui/02-market.png" width="200" alt="Pazar: borsa haberleri, ürünler, VIP siparişler">
-  <img src="production/qa/evidence/faz5-ui/02-dex.png" width="200" alt="Seed-Dex koleksiyonu">
+  <img src="production/qa/evidence/ui-polish/tr-farm.png" width="200" alt="Çiftlik: cam çerçeveli ızgara, FLORA ipucu, eylemler, tohum tepsisi">
+  <img src="production/qa/evidence/ui-polish/en-lab.png" width="200" alt="Lab (İngilizce): iki ebeveyn ve çaprazlama">
+  <img src="production/qa/evidence/ui-polish/tr-market.png" width="200" alt="Pazar: fiyat grafikleri, haberler, siparişler">
+  <img src="production/qa/evidence/ui-polish/en-goals.png" width="200" alt="Hedefler (İngilizce)">
 </p>
+
+**Cila turu:** tasarım dili ("Gece Serası": [design/design-language.md](design/design-language.md)), yeni yazı tipleri ve 42 ikonluk SVG seti, **Türkçe + İngilizce**
+(ayarlardan değişir, ilk açılışta sistem dili), gün-gece döngülü manzara, hareket dili, hedef sistemi ve FLORA kurgusu, titreşim, alçak sera uğultusu, "Hasat" tek dokunuş düğmesi, fiyat grafikleri.
 
 | Faz | Kapsam | Durum |
 |---|---|---|
@@ -32,21 +35,21 @@ Terk edilmiş bir gökdelenin katlarında hidroponik bir çiftlik kur; iki tohum
 # Oyunu aç (ana sahne src/ui/main.tscn). Temiz klonda önce: godot --headless --path . --import  (çeviri dosyasını üretir)
 godot --path . --windowed
 
-bash tools/run_tests.sh                                   # tüm testler (350)
-bash tools/capture_faz5_evidence.sh                       # arayüz ekran görüntülerini yeniden üret (gerçek çizim, 1080x1920 ve 1080x2400)
+bash tools/run_tests.sh                                   # tüm testler (420+)
+bash tools/capture_ui_evidence.sh                         # arayüz ekran görüntülerini yeniden üret (iki dil, 1080x1920 ve 1080x2400, büyük yazı, renk körlüğü)
 bash tools/setup-godot-android.sh                         # bir kez: Android dışa aktarma araçları
 godot --headless --export-debug "Android" build/floralab-debug.apk
 # Release (imza bilgisi ortam değişkeninden; anahtar deposu depoda YOK):
 GODOT_ANDROID_KEYSTORE_RELEASE_PATH=... GODOT_ANDROID_KEYSTORE_RELEASE_USER=... GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=... \
-  godot --headless --export-release "Android Release" build/floralab-1.0.0.apk
+  godot --headless --export-release "Android Release" build/floralab-1.1.0.apk
 ```
 
 **Bilinen sınırlar (dürüst liste):** gerçek bir Android cihazda/emülatörde çalıştırılmadı (APK paket, imza ve başsız açılış olarak doğrulandı);
 ekonomi insan oynatılarak değil benzetimle dengelendi; kayıt şifrelemesi caydırıcıdır, güvenlik değildir; gdUnit4 yerine kendi test koşucusu
-kullanılıyor (üçüncü taraf kod çalıştırma izni verilmedi); ses yer tutucudur; yalnızca Türkçe.
+kullanılıyor (üçüncü taraf kod çalıştırma izni verilmedi); sesler kodla üretilen yer tutucudur (müzik yok); Türkçe ve İngilizce.
 
 - Mimari, klasör şeması, Autoload listesi, genetik kuralları ve formüller: **[docs/architecture/floralab-architecture.md](docs/architecture/floralab-architecture.md)**
-- Tasarım kaydı: [design/game-brief.md](design/game-brief.md) · Kanıt ekran görüntüleri: [faz1](production/qa/evidence/faz1-plant-instance/README.md), [faz2](production/qa/evidence/faz2-farm/README.md), [faz5](production/qa/evidence/faz5-ui/README.md)
+- Tasarım kaydı: [design/game-brief.md](design/game-brief.md) · Kanıt ekran görüntüleri: [faz1](production/qa/evidence/faz1-plant-instance/README.md), [faz2](production/qa/evidence/faz2-farm/README.md), [arayüz](production/qa/evidence/ui-polish/README.md)
 - Test altyapısı ve gdUnit4 durumu: [tests/README.md](tests/README.md)
 
 ---

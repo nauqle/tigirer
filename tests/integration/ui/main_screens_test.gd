@@ -240,6 +240,51 @@ func test_the_price_board_lists_every_fruit_with_a_chart() -> void:
 	assert_eq(charts.size(), fruit_count, "her meyve için bir mini grafik")
 
 
+## HUD'da şu an yüzen "+N" etiketlerinin sayısı.
+func _floating_gains() -> int:
+	var count: int = 0
+	for node: Node in _main.hud().find_children("*", "Label", true, false):
+		if (node as Label).text.begins_with("+"):
+			count += 1
+	return count
+
+
+func test_clearing_removes_every_toast_and_floating_gain() -> void:
+	await _frames()
+	_main.toasts().show_text("Merhaba", ToastLayer.Kind.GOOD)
+	_session.wallet.add_credits(500)
+	await _frames()
+	assert_false(_main.toasts().visible_texts().is_empty(), "bildirim göründü")
+	assert_eq(_floating_gains(), 1, "yüzen +N göründü")
+
+	_main.toasts().clear()
+	_main.hud().clear_floats()
+	await _frames()
+
+	assert_true(_main.toasts().visible_texts().is_empty(), "bildirimler temizlendi")
+	assert_eq(_floating_gains(), 0, "yüzen +N temizlendi")
+
+
+func test_the_news_card_shows_an_active_headline_once_not_again_as_history() -> void:
+	var event_def: MarketEventDef = _session.catalog.market_events[0]
+	_session.market.start_event(event_def)
+	_main.open_tab(2)
+	await _frames()
+
+	var headline: String = tr(event_def.headline)
+	var exact_matches: int = 0
+	var detailed_matches: int = 0
+	for node: Node in _main.panel(2).find_children("*", "Label", true, false):
+		var text: String = (node as Label).text
+		if text == headline:
+			exact_matches += 1
+		elif text.begins_with(headline):
+			detailed_matches += 1
+
+	assert_eq(detailed_matches, 1, "etkin olay ayrıntılı satırla bir kez gösterilir")
+	assert_eq(exact_matches, 0, "aynı başlık geçmiş listesinde tekrar etmez")
+
+
 func test_an_order_can_only_be_delivered_when_the_goods_are_there() -> void:
 	_session.tick(0.5)  # ilk sipariş
 	_main.open_tab(2)
@@ -490,6 +535,40 @@ func test_the_largest_text_size_keeps_every_tab_button_inside_the_screen_width()
 # ------------------------------------------------------------------- rozetler
 
 
+## Panelde görünen `PrimaryButton` sayısı (tasarım dili: ekranda tek birincil düğme).
+func _visible_primary_buttons(root: Node) -> int:
+	var count: int = 0
+	for node: Node in root.find_children("*", "Button", true, false):
+		var button: Button = node as Button
+		if button.theme_type_variation == &"PrimaryButton" and button.is_visible_in_tree():
+			count += 1
+	return count
+
+
+func test_every_tab_shows_at_most_one_primary_button_even_with_goods_and_a_ready_order() -> void:
+	_session.tick(0.5)
+	var order: Order = _session.orders.orders[0]
+	var kinds: Array[StringName] = [order.fruit_id]
+	for part: PlantPartDef in _session.catalog.ruleset.get_parts_for_layer(PlantPartDef.Layer.FRUIT):
+		if part.id != order.fruit_id and kinds.size() < 3:
+			kinds.append(part.id)
+	for fruit_id: StringName in kinds:
+		var gene: PlantGene = PlantGene.homozygous(&"stem_reed", &"leaf_oval", fruit_id, 0.3)
+		gene.uid = "primary-%s" % fruit_id
+		var result: HarvestResult = HarvestResult.new()
+		result.gene = gene
+		result.phenotype = GeneticsEngine.express(gene, _session.catalog.ruleset)
+		result.quantity = order.quantity if fruit_id == order.fruit_id else 2
+		result.unit_value = 50.0
+		_session.inventory.add_produce(result)
+	_session.wallet.add_credits(100000)
+
+	for tab: int in 5:
+		_main.open_tab(tab)
+		await _frames()
+		assert_true(_visible_primary_buttons(_main.panel(tab)) <= 1, "sekme %d: en çok bir birincil düğme" % tab)
+
+
 func test_the_market_tab_gets_a_badge_when_an_order_can_be_delivered() -> void:
 	_session.tick(0.5)
 	var order: Order = _session.orders.orders[0]
@@ -598,3 +677,40 @@ func test_the_intro_card_shows_once_and_closing_it_marks_it_seen() -> void:
 
 	assert_false(fresh.intro_overlay().visible)
 	assert_true(fresh.session.settings.intro_seen, "kapanınca görüldü sayıldı")
+
+
+func test_the_harvest_button_cuts_ripe_plants_and_is_disabled_when_nothing_is_ripe() -> void:
+	await _frames()
+	_session.plant_all(0, "starter_reed_berry")
+	await _frames(40)  # yarım saniyelik ipucu zamanlayıcısı düğmeyi günceller
+	assert_true(_button(tr("FARM_HARVEST_ALL")).disabled, "olgun bitki yokken pasif")
+
+	for pot_index: int in 3:
+		_session.farm.get_pot(0, pot_index).growth = 1.0
+	await _frames(40)
+	var harvest: Button = _button(tr("FARM_HARVEST_ALL"))
+	assert_false(harvest.disabled, "olgun bitki varken açık")
+	harvest.pressed.emit()
+
+	for pot_index: int in 3:
+		assert_true(_session.farm.get_pot(0, pot_index).is_empty(), "saksı %d biçildi" % pot_index)
+
+
+func test_market_rows_and_buttons_stay_inside_the_screen_at_the_largest_text_in_both_languages() -> void:
+	_session.plant_all(0, "starter_reed_berry")
+	for pot_index: int in 3:
+		_session.farm.get_pot(0, pot_index).growth = 1.0
+		_session.harvest_pot(0, pot_index)
+	_session.settings.set_text_scale_index(3)
+	for language: String in ["tr", "en"]:
+		_session.settings.set_language(language)
+		await _frames(4)
+		_main.open_tab(2)
+		await _frames(2)
+		for node: Node in _main.panel(2).find_children("*", "PriceButton", true, false):
+			var button: PriceButton = node as PriceButton
+			if not button.is_visible_in_tree():
+				continue
+			var rect: Rect2 = button.get_global_rect()
+			assert_true(rect.end.x <= 1080.5, "[%s] düğme sağ kenarı aşıyor: %s (%s)" % [language, str(rect), button.caption()])
+			assert_true(rect.size.x >= 120.0, "[%s] düğme çökmüş: %s (%s)" % [language, str(rect), button.caption()])

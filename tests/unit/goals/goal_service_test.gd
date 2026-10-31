@@ -130,3 +130,19 @@ func test_an_empty_goal_list_is_simply_finished() -> void:
 	assert_null(empty.current())
 	assert_true(empty.all_done())
 	empty.note(GoalDef.Kind.HARVEST, 1)
+
+
+func test_a_negative_or_zero_amount_never_takes_progress_away() -> void:
+	_service.note(GoalDef.Kind.HARVEST, 2)
+
+	_service.note(GoalDef.Kind.HARVEST, -5)
+	_service.note(GoalDef.Kind.HARVEST, 0)
+
+	assert_eq(_service.progress_of(_service.current()), 2)
+
+
+func test_a_goal_saved_as_done_loads_as_fully_progressed_even_if_its_counter_was_lost() -> void:
+	_service.load_dict({"done": ["harvest3"], "progress": {"harvest3": 0}})
+
+	assert_true(_service.is_done(_service.defs[0]))
+	assert_eq(_service.progress_of(_service.defs[0]), 3, "biten hedefin sayacı hedefe eşitlenir")

@@ -14,6 +14,9 @@ config/name="FloraLab: Cyber Harvest"
 config/version="1.1.0"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/art/icon.svg"
+boot_splash/bg_color=Color(0.0235, 0.0509, 0.0392, 1)
+boot_splash/image="res://assets/art/splash.png"
+boot_splash/fullsize=false
 run/main_scene="res://src/ui/main.tscn"
 config/quit_on_go_back=false
 
@@ -41,6 +44,8 @@ locale/translations=PackedStringArray("res://assets/i18n/strings.tr.translation"
 locale/fallback="en"
 
 [rendering]
+
+environment/defaults/default_clear_color=Color(0.0235, 0.0509, 0.0392, 1)
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
