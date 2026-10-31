@@ -102,3 +102,27 @@ func test_night_dims_the_sun_and_day_restores_it() -> void:
 
 	assert_true(night < day, "gece güneş ışığı azalır")
 	assert_almost_eq(stage.sun_energy(), day, 0.0001, "gündüz eski şiddete döner")
+
+
+func test_a_pot_base_sits_on_the_rim_of_a_pot_standing_on_its_shelf() -> void:
+	var stage: FarmStage = _stage(3, 2, Vector2(1030.0, 1000.0))
+
+	for pot_index: int in 6:
+		var col: int = pot_index % 3
+		var row: int = pot_index / 3
+		var base: Vector3 = stage.pot_base_world(pot_index)
+		var shelf_top: float = -float(2 * row + 2)
+		assert_almost_eq(base.x, float(col) + 0.5, 0.0001, "saksı %d sütun ortası" % pot_index)
+		assert_almost_eq(base.y, shelf_top + FarmStageParts.POT_HEIGHT, 0.01, "saksı %d: kök, raf üstü + saksı yüksekliği" % pot_index)
+		assert_almost_eq(base.z, 0.0, 0.0001, "oyun düzleminde")
+
+
+func test_the_first_row_sits_above_the_second_on_screen_and_columns_run_left_to_right() -> void:
+	var stage: FarmStage = _stage(3, 2, Vector2(1030.0, 1000.0))
+
+	var top_left: Vector2 = stage.project(stage.pot_base_world(0))
+	var top_right: Vector2 = stage.project(stage.pot_base_world(2))
+	var bottom_left: Vector2 = stage.project(stage.pot_base_world(3))
+
+	assert_true(top_right.x > top_left.x + 100.0, "sütunlar soldan sağa")
+	assert_true(bottom_left.y > top_left.y + 100.0, "ikinci satır ilkinin altında")

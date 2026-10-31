@@ -122,3 +122,20 @@ func test_syncing_never_changes_the_farm_state() -> void:
 	_sync()
 
 	assert_eq(_floor.to_dict(), before, "sahne yalnızca okur")
+
+
+func test_a_flying_drone_hovers_above_its_pot_and_an_idle_one_rests_lower() -> void:
+	var flying: DroneAgent = DroneAgent.new()
+	flying.position = Vector2(1.5, 0.5)
+	flying.state = DroneAgent.State.FLYING_TO
+	var resting: DroneAgent = DroneAgent.new()
+	resting.position = Vector2(1.5, 0.5)
+	resting.state = DroneAgent.State.IDLE
+
+	_sync([flying, resting] as Array[DroneAgent], true)
+
+	var air: Vector3 = _stage.drone_position(0)
+	var ground: Vector3 = _stage.drone_position(1)
+	assert_almost_eq(air.x, 1.5, 0.0001, "dron saksı sütununun üstünde")
+	assert_almost_eq(air.y, -1.0 + FarmStage.DRONE_HOVER, 0.03, "saksının biraz üstünde uçar")
+	assert_almost_eq(air.y - ground.y, FarmStage.DRONE_IDLE_DROP, 0.03, "üste kondu: uçuş yüksekliğinden aşağıda")

@@ -139,7 +139,25 @@ bölgesinde), kaydırması zor oyuncular için "Hasat" düğmesi (tek dokunuşla
 **Kontrast (ölçüldü, test korur):** `TEXT` yüzeylerde ≥ 11.6:1; `TEXT_MUTED` ≥ 5.9:1; klorofil/kehribar/aqua ≥ 7.3:1; mor ve mercan ≥ 4.6:1 (hepsi WCAG AA). `TEXT_DIM` AA'nın
 altındadır (2.8–4.1:1): YALNIZCA pasif ve dekoratif öğelerde (kilit ikonu, devre dışı düğme) kullanılır, bilgi taşımaz. Renk körlüğü paleti de ≥ 6.5:1.
 
-## 12. Kod eşlemesi
+## 12. Derinlik ve ışık (2.5D çiftlik)
+
+Çiftlik artık düz çizim değil, bir **cam kutu diorama**: gerçek geometri, perspektif kamera ve ışık. Arayüz (HUD, paneller, düğmeler) hâlâ düz 2D "cam" yüzeylerdir;
+derinlik yalnızca oyun dünyasındadır ve arayüzün altında kalır. Mimari karar: `docs/architecture/floralab-architecture.md`, bölüm 7.5.
+
+| İlke | Uygulama |
+|---|---|
+| **Derinlik geometriden gelir, bulanıklıktan değil** | arka duvar, raflar, direkler, ön cam gerçek konumlarında; kamera hafif süzülür (±1.8° yatay, ±0.8° dikey, 12 sn) |
+| **Işık anlam taşır** | UV lambası YANIYORSA mor huzme ve çubuk parlar, yanmıyorsa sönük gri; su penceresi ıslaklıkla parlaklaşır; mutasyon halosu bitkinin arkasında nabız atar |
+| **Bitki hep okunur** | bitki dörtgeni UV huzmesinin ÖNÜNDE kalır (toplamalı mor ekleme bitkiyi soldurmasın); UV bitkiyi yalnızca %10 mor ışık payı ve hafif ton kaymasıyla etkiler |
+| **Gösterge keskin kalır** | büyüme/su çubukları, hasada hazır halkası, damla ve yazı efektleri 3D'ye gömülmez, ekran uzayında 2D çizilir |
+| **Palet aynı** | kabuk Gece Serası yeşil-lacivert, vurgu klorofil (raf ucu), UV mor, su turkuaz, kredi kehribar; renk körlüğü kipi göstergelerin paletini değiştirir |
+| **Hareketi azalt** | kamera sabit, bitki salınımı, boru akışı ve halo nabzı durur; içerik ve ışık aynı kalır |
+| **Gün/gece** | güneş ve ortam ışığı ile bitki/duvar tonu `night_factor`'a göre değişir (gündüz sıcak, gece soğuk mavi); UV ışığı gece/gündüz aynı |
+
+Yasaklar: gerçek zamanlı gölge haritası (mobil bütçe; temas gölgesi bilboard), ekran dolduran bulanıklık/parlama, oyunculuk düzlemini (z = 0) döndüren kamera hareketi.
+
+## 13. Kod eşlemesi
 
 `UiTokens` (renk, boşluk, yarıçap, süre, nadirlik) → `UiTheme` (tür varyasyonları, yazı tipleri) → `UiKit` (kurucular) → bileşenler (`src/ui/common/`) → paneller
-(`src/ui/panels/`). Dosya listesi: mimari belge, bölüm 2.
+(`src/ui/panels/`). Çiftlik: `FarmView` → `FarmStage` + `FarmStageParts` + `PlantAtlas` + `PotOverlay` (`src/ui/farm/`), gölgelendiriciler `assets/shaders/spatial_*.gdshader`.
+Dosya listesi: mimari belge, bölüm 2.

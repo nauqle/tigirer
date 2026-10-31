@@ -4,7 +4,7 @@ Bu depoda iki oyun ve onları geliştirmek için kurulu bir çerçeve var.
 
 | Oyun | Motor | Klasörler | Durum |
 |---|---|---|---|
-| **FloraLab: Cyber Harvest**: dikey çiftlik, bitki genetiği, otomasyon | Godot 4.7.2 (GDScript) | `src/`, `assets/`, `tests/`, `project.godot` | FAZ 1–5 hazır, cila turu tamam, release APK 1.1.0 dışa aktarıldı |
+| **FloraLab: Cyber Harvest**: dikey çiftlik, bitki genetiği, otomasyon | Godot 4.7.2 (GDScript) | `src/`, `assets/`, `tests/`, `project.godot` | FAZ 1–5 hazır, cila turu tamam, 2.5D çiftlik sahnesi, release APK 1.2.0 dışa aktarıldı |
 | **Son Fener**: tek parmakla savunma | Java, yerel Android | `app/`, `releases/` | Tamam (1.0), aşağıda |
 
 Çerçeve: [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) 1.2.0, Godot için yapılandırıldı (`.claude/`, `CLAUDE.md`, `project.yaml`).
@@ -14,11 +14,14 @@ Bu depoda iki oyun ve onları geliştirmek için kurulu bir çerçeve var.
 Terk edilmiş bir gökdelenin katlarında hidroponik bir çiftlik kur; iki tohumu çaprazla, ebeveyn genlerini (büyüme hızı, su tüketimi, pazar değeri, renk) aktar, **%5 ihtimalle** nadir bir mutasyon yakala; bitkileri kaydırarak hasat et, dronlara devret, dinamik borsada sat, Seed-Dex'i doldur. Dikey (1080×1920) Android oyunu.
 
 <p>
-  <img src="production/qa/evidence/ui-polish/tr-farm.png" width="200" alt="Çiftlik: cam çerçeveli ızgara, FLORA ipucu, eylemler, tohum tepsisi">
+  <img src="production/qa/evidence/ui-polish/tr-farm.png" width="200" alt="Çiftlik: 2.5D cam kutu, UV huzmeleri, FLORA ipucu, eylemler, tohum tepsisi">
+  <img src="production/qa/evidence/ui-polish/tr-farm-tower.png" width="200" alt="Çiftlik: dört katlı 4x4 kule">
   <img src="production/qa/evidence/ui-polish/en-lab.png" width="200" alt="Lab (İngilizce): iki ebeveyn ve çaprazlama">
   <img src="production/qa/evidence/ui-polish/tr-market.png" width="200" alt="Pazar: fiyat grafikleri, haberler, siparişler">
   <img src="production/qa/evidence/ui-polish/en-goals.png" width="200" alt="Hedefler (İngilizce)">
 </p>
+
+**2.5D çiftlik:** oyun düzlemde oynanır ama sahne gerçek 3D'dir: cam kutu, raflar, torna profilli saksılar, akan sulama boruları, UV lambası huzmeleri, 3D dronlar, perspektif kamera ve gün/gece ışığı. Bitkiler elle çizilmiş katmanlı sanatını korur (karar ve gerekçe: [mimari belge, bölüm 7.5](docs/architecture/floralab-architecture.md)).
 
 **Cila turu:** tasarım dili ("Gece Serası": [design/design-language.md](design/design-language.md)), yeni yazı tipleri ve 42 ikonluk SVG seti, **Türkçe + İngilizce**
 (ayarlardan değişir, ilk açılışta sistem dili), gün-gece döngülü manzara, hareket dili, hedef sistemi ve FLORA kurgusu, titreşim, alçak sera uğultusu, "Hasat" tek dokunuş düğmesi, fiyat grafikleri.
@@ -41,7 +44,7 @@ bash tools/setup-godot-android.sh                         # bir kez: Android dı
 godot --headless --export-debug "Android" build/floralab-debug.apk
 # Release (imza bilgisi ortam değişkeninden; anahtar deposu depoda YOK):
 GODOT_ANDROID_KEYSTORE_RELEASE_PATH=... GODOT_ANDROID_KEYSTORE_RELEASE_USER=... GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=... \
-  godot --headless --export-release "Android Release" build/floralab-1.1.0.apk
+  godot --headless --export-release "Android Release" build/floralab-1.2.0.apk
 ```
 
 **Bilinen sınırlar (dürüst liste):** gerçek bir Android cihazda/emülatörde çalıştırılmadı (APK paket, imza ve başsız açılış olarak doğrulandı);

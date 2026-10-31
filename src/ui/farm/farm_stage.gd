@@ -566,6 +566,11 @@ func visible_drone_count() -> int:
 	return count
 
 
+## Sahnedeki i. dronun dünya konumu (yoksa sıfır).
+func drone_position(index: int) -> Vector3:
+	return _drone_nodes[index].position if index >= 0 and index < _drone_nodes.size() else Vector3.ZERO
+
+
 ## Güneş ışığının şiddeti (gece/gündüz testi için).
 func sun_energy() -> float:
 	return _sun.light_energy

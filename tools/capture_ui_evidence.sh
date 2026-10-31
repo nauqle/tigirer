@@ -23,6 +23,9 @@ for lang in tr en; do
 done
 shot tr-intro 1080x1920 --scenario=intro --lang=tr
 shot en-intro 1080x1920 --scenario=intro --lang=en
+shot tr-farm-day 1080x1920 --scenario=day --lang=tr
+shot en-farm-drones 1080x1920 --scenario=drones --lang=en
+shot tr-farm-tower 1080x1920 --scenario=tower --lang=tr
 shot tr-toasts 1080x1920 --scenario=toasts --lang=tr
 shot en-toasts 1080x1920 --scenario=toasts --lang=en
 shot tr-offline 1080x1920 --scenario=offline --lang=tr

@@ -12,7 +12,7 @@
 | Faz | Kapsam | Durum |
 |---|---|---|
 | 1 | `PlantGene` Resource, Mendel çaprazlama, %5 mutasyon, katmanlı `PlantInstance`, `SignalBus` | **Var, testli, ekran görüntülü** |
-| 2 | Hidroponik ızgara (`TileMapLayer`), saksılar, `TimeManager`, büyüme evreleri, su/ışık çarpanları, kaydırarak hasat, ses/parçacık | **Var, testli, ekran görüntülü** (bölüm 8) |
+| 2 | Hidroponik ızgara (başta `TileMapLayer`, şimdi 2.5D sahne: bölüm 7.5), saksılar, `TimeManager`, büyüme evreleri, su/ışık çarpanları, kaydırarak hasat, ses/parçacık | **Var, testli, ekran görüntülü** (bölüm 8) |
 | 3 | Dinamik borsa (arz-talep), haber olayları, envanter, VIP siparişler, çaprazlama maliyeti | **Var, testli** (bölüm 9) |
 | 4 | Sulama/UV matrisi, hasat dronu durum makinesi, yeni kat açma | **Var, testli, ekran görüntülü** (bölüm 10) |
 | 5 | Mobil arayüz, Seed-Dex, şifreli `SaveManager`, çevrimdışı kazanç, ayarlar, yerelleştirme | **Var, testli, ekran görüntülü** (bölüm 11) |
@@ -51,13 +51,13 @@ res://
 │   │   │                                 goal_text, night_backdrop + skyline_layer (gün-gece manzarası), game_panel
 │   │   ├── hud/hud_bar.gd                kredi (sayarak), gün çizgisi, hız, menü, itibar, hedef çipi, haber şeridi
 │   │   ├── panels/                       farm, lab, market, dex, upgrades, goals_overlay, settings_overlay, intro_overlay, offline_popup
-│   │   ├── farm/                         farm_view (cam çerçeve, kat geçişi), farm_tiles, pot_overlay (akış, ışıltı), drone_layer
+│   │   ├── farm/                         farm_view (görünüm penceresi, dokunuş, kat geçişi), farm_stage + farm_stage_parts (2.5D sahne), plant_atlas, pot_overlay (ekran uzayı göstergeler)
 │   │   ├── fx/harvest_fx.gd              parçacık, yazı, halka dalgası, su sıçraması, HUD'a uçan sikkeler
 │   │   └── audio/                        audio_service, haptics_service (titreşim), sfx_bank (kodla üretilen sesler)
 │   └── dev/                              Geliştirici sahneleri (dışa aktarmada yok): genetics_lab, farm_dev, ui_showcase
 │
 ├── assets/
-│   ├── art/                              icon.svg (+ splash.png) · icons/ 42 SVG ikon · plants/{stems,leaves,fruits}/ 15 gri SVG parça · farm/farm_tiles.svg
+│   ├── art/                              icon.svg (+ splash.png) · icons/ 42 SVG ikon · plants/{stems,leaves,fruits}/ 15 gri SVG parça
 │   ├── fonts/                            Bricolage Grotesque + Nunito Sans (değişken, SIL OFL) ve lisansları
 │   ├── data/                             veri odaklı içerik (kod değişmeden çoğaltılır)
 │   │   ├── genetics/                     default_ruleset.tres · parts/ (15) · mutations/ (6) · seeds/ (4 başlangıç tohumu)
@@ -69,7 +69,7 @@ res://
 │
 ├── tests/                                kod kökünün DIŞINDA: unit/{core,genetics,farm,economy,automation,dex,save,ui}, integration/{genetics,plants,farm,economy,
 │                                         automation,game,ui}, support/ (test_case, test_runner, *_fixtures), smoke/critical-paths.md
-├── tools/                                run_tests.sh, capture_screenshot.sh, capture_ui_evidence.sh, setup-godot-android.sh, art/ (make_icons, make_farm_tiles)
+├── tools/                                run_tests.sh, capture_screenshot.sh, capture_ui_evidence.sh, setup-godot-android.sh, art/ (make_icons)
 ├── docs/architecture/                    bu belge
 ├── design/                               game-brief.md (tasarım kaydı) · design-language.md (tasarım dili)
 └── production/qa/evidence/               retained ekran görüntüleri: faz1-plant-instance/, faz2-farm/, ui-polish/ (README + stamp.txt)
@@ -269,6 +269,40 @@ GeneticsLab (Control, genetics_lab.gd)         ← ŞU AN ana sahne; --cross --s
 
 Arayüz kodla kurulur (geliştirici aracı; oyuncuya dönük arayüz FAZ 5'te `src/ui/`'da, yerelleştirilmiş metinle).
 
+### 7.5 2.5D çiftlik sahnesi (`FarmStage`)
+
+**Karar: tam 3D değil, 2.5D.** Oyun düzlemde oynanır (dokun/kaydır, 3×2 ile 4×4 ızgara); mantık motordan bağımsızdır (`RefCounted` hizmetler),
+görünüm katmanı değiştirilebilirdir. Bitki sanatı elle çizilmiş katmanlı vektör parçalarıdır ve genetik renk + parlama gölgelendiricisiyle birleşir
+(15 SVG parça × renk × mutasyon). Tam 3D, bu hattı baştan yazmayı (15 parça için ağ üreticisi, yaprak/çiçek/gövde malzemeleri, kemik/rüzgâr), telefonda
+serbest kamerayı (kaydırmada örtüşme, kamera yönetimi) ve düzlemde kusursuz olan dokunuş eşlemesini kaybetmeyi gerektirirdi; kazandırdığı derinlik algısını
+2.5D zaten verir. Derinlik: gerçek geometri (kutu, raf, saksı), perspektif kamera (FOV 26°, 5° eğim, hafif süzülme), ışık (ortam + güneş + UV lambası ışığı).
+
+```text
+FarmView (Control)                          ← API değişmedi: pot_tapped, harvest_requested, swipe_*, show_floor, set_night, pot_local_position
+├── SubViewportContainer → SubViewport (own_world_3d, transparent_bg, MSAA 2x)
+│   └── FarmStage (Node3D)
+│       ├── Camera3D · DirectionalLight3D · Environment (ortam ışığı; gece/gündüz buradan)
+│       ├── PlantAtlas (SubViewport, saydam 2D)     tüm PlantInstance'lar tek dokuda, hücre başına bir bitki
+│       └── Floor (Node3D, kat değişince baştan kurulur)
+│           ├── kabuk: arka duvar (shader), tavan, 4 direk, ön cam (shader), dikey su yükselticisi
+│           ├── bölme başına: raf levhası, sulama borusu (akan su shader'ı), UV çubuğu + OmniLight3D + saksı başına huzme
+│           ├── saksı başına: torna profilli gövde + ağız halkası, su penceresi, temas gölgesi, halo bilboard, bitki dörtgeni
+│           └── dronlar (gövde + dönen kanatlar + hasat parlaması), üs pedi
+├── PotOverlay (Control, ekran uzayı)       büyüme/su çubukları, susuzluk damlası, hasada hazır halkası
+└── fx katmanı (Control) + kaydırma izi (Line2D)   HarvestFx
+```
+
+- **Koordinatlar:** oyun düzlemi z = 0, birim = bir karo, x sağa, y yukarı. Bölme r: raf üstü `y = -(2r+2)`, saksı kökü `y = -(2r+1) - 0.644`.
+- **Dönüşüm analitiktir** (`FarmStage.project`, `plane_point`): kameranın konumu ve FOV'undan hesaplanır; çizilmiş pencereye bağlı değildir, başsız testte aynıdır.
+  Dokunuş: ekran → ışın → z = 0 düzlemi → eski `SegmentMath` dikdörtgen kesişimi (karo biriminde). Kamera süzülürken bile eşleme o anki kameradan hesaplanır.
+- **Bitkiler (`PlantAtlas`):** `PlantInstance` sanatı ve gölgelendiricisi DEĞİŞMEDİ; hepsi tek saydam SubViewport'ta (4 sütun, hücre 288×448) çizilir, sahne her bitki için
+  düz dörtgenle o hücreyi basar (kare başına tek 2D geçiş; bitki başına pencere yok). Halo toplamalı karışım kullandığından atlasta çizilemez (saydam hedefe yazılmaz):
+  sahnede ayrı ışık bilboard'u (`spatial_plant_halo`) olarak bitkinin arkasına konur.
+- **Renk uzayı (Compatibility'de bulundu):** gölgelendirilmemiş (unshaded) `ALBEDO` doğrudan gösterim değeri olarak yazılır (0.5 → 128); atlas dokusu `source_color` ile okunmaz, çeviri yapılmaz.
+- **Sıralama:** toplamalı UV huzmesi bitkinin ÖNÜNDE çizilirse bitkiyi soldurur (mor ekleme); huzme nesne merkezi bitkinin arkasında tutularak önce çizilir (`BEAM_Z`).
+- **Maliyet bütçesi (ölçülmedi, tasarım):** 4×4 katta yaklaşık 150 çizim çağrısı, 4 OmniLight3D, gölge haritası yok (temas gölgesi bilboard), bir 2D atlas geçişi.
+  Gerçek cihazda ölçülmedi (bölüm 15). Sekme gizliyken hem 3D pencere hem atlas çizilmez.
+
 ## 8. Çiftlik kuralları (FAZ 2)
 
 Tüm sayılar `assets/data/farm/default_farm_config.tres` (`FarmConfig`) içindedir; formüller `GrowthModel`'de saf ve durumsuzdur.
@@ -283,8 +317,9 @@ Tüm sayılar `assets/data/farm/default_farm_config.tres` (`FarmConfig`) içinde
 - **Kaydırarak hasat** `FarmView`: parmağın çizgisi saksı dairesiyle `SegmentMath` kesişiminde olgun saksıyı BİR kez ister
   (kaydırma başına kümesi); kombo adımı başına +%5, en çok +%50 (`combo_bonus_*`).
 - **Zaman** `TimeManager`: gün = 300 sn oyun saati; hız 1/2/5.
-- **Çizim** `FarmView`: `TileMapLayer` ızgarası (SVG atlas, `farm_tiles.svg`), saksı üstüne `PlantInstance`, su/büyüme çubukları (`PotOverlay`),
-  UV lambası ışığı, `HarvestFx` (parçacık, kombo yazısı), `DroneLayer`. "Hareketi azalt" açıkken parçacık/sarsıntı kapanır.
+- **Çizim** `FarmView` → `FarmStage` (2.5D sahne, bölüm 7.5): cam kutu, raflar, saksılar, sulama borusu, UV lambası ve huzmeleri, dronlar; bitkiler
+  `PlantAtlas`'tan basılan düz dörtgenler; su/büyüme çubukları (`PotOverlay`, ekran uzayı), `HarvestFx` (parçacık, kombo yazısı).
+  "Hareketi azalt" açıkken kamera süzülmesi, salınım, parçacık ve akış kapanır.
 - **Ses** `AudioService` olaylardan ses çalar; sesler `SfxBank`'te koddan üretilir (ses dosyası yok). Ek olarak sessiz, dikişsiz bir sera uğultusu döngüsü (`SfxBank.make_ambience`) ses ayarına bağlı çalar.
 
 ## 9. Ekonomi kuralları (FAZ 3)
@@ -408,12 +443,18 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
 | 28 | Hedefler veri odaklı ve sıralı; ilerleme tüm hedeflere birikir | oturum hedefsiz kalmasın ("Player goal" tamamlanmışlık); sıradaki hedef önceden tamamsa art arda tamamlanır |
 | 29 | `HapticsService` ayrı düğüm, titreşim enjekte edilebilir | ayardaki "Titreşim" anahtarı önceden hiçbir şey yapmıyordu; artık olaydan (hasat, ödül, hata) darbe çıkar |
 | 30 | Pazar fiyat geçmişi `MarketService`'te (meyve başına son 24 endeks örneği, kayda dahil) | mini grafikler gerçek veriyi çizer; ekonomi kuralları değişmedi |
+| 31 | Çiftlik görünümü 2.5D: Node3D sahne + perspektif kamera, bitkiler atlas dörtgeni | tam 3D bitki üretimi 15 parçalık sanat hattını baştan yazdırırdı ve düzlemdeki kusursuz dokunuş eşlemesini bozardı; derinlik geometri, kamera ve ışıktan gelir. Mantık katmanına dokunulmadı |
+| 32 | Ekran <-> düzlem dönüşümü kameradan analitik hesaplanır | `Camera3D.unproject_position` çizilmiş pencereye ve kamera durumuna bağlı; analitik hesap başsız testlerde deterministik ve birim testlenebilir (gidiş-dönüş, 4 kat boyutu × 4 en-boy oranı) |
+| 33 | Bitkiler tek ortak `PlantAtlas` SubViewport'unda | `PlantInstance` sanatı/gölgelendiricisi aynı kalır; bitki başına 16 pencere yerine kare başına tek 2D geçiş. Halo atlasta çizilemez (toplamalı karışım), sahnede ayrı bilboard |
+| 34 | Gerçek gölge haritası yok, temas gölgesi bilboard; ortam + güneş + 1 OmniLight/UV satırı | mobil Compatibility bütçesi; gölge geçişi ve çoklu ışık maliyeti ölçülmeden eklenmedi |
 
 ## 15. Açık sorular ve bilinen sınırlar
 
 1. **gdUnit4:** üçüncü taraf eklentinin kurulup çalıştırılmasına izin veriyor musun? Şimdilik kendi koşucum (aynı çıkış kodları) kullanılıyor;
    `project.yaml` → `commands.test` bilerek gdUnit4'ü gösterir (`project-coherence.sh` tek bir "DIFFERS" bildirir: beklenen ve belgelenmiş fark).
 2. **Gerçek cihaz:** APK paket/imza/başsız açılış olarak doğrulandı; bir Android cihazda dokunma hissi, performans, güvenli alan (çentik) ve geri tuşu denenmedi.
+   **2.5D sahnenin cihazdaki kare hızı ve pil maliyeti ölçülmedi** (yalnızca yazılım OpenGL'li Xvfb'de çizildi); 4×4 katta düşük sınıf cihazda ağır olabilir.
+   Gerekirse ilk kısmalar: MSAA'yı kapatmak, `SubViewport` çözünürlüğünü küçültmek, OmniLight'ları kaldırmak, atlas hücresini küçültmek.
 3. **Performans bütçeleri** (`project.yaml`) bilinçli olarak boş: hedef cihaz sınıfı belirlenince doldurulacak.
 4. **Sanat:** SVG parçalar yer tutucu kalitede ama oyun içi kullanıma uygun; elle çizilmiş sanat gelirse `PlantPartDef.texture` değişir, kod değişmez.
 5. **Dil:** Türkçe ve İngilizce; yeni dil = iki CSV'ye sütun + `GameSettings.LANGUAGES` + `project.godot` çeviri listesi. İngilizce metinlerin dil bilgisi/ton denetimi ana dili İngilizce olan biri tarafından yapılmadı.

@@ -141,6 +141,11 @@ func _change_floor(step: int) -> void:
 	_show_floor((_floor_index + step + count) % count, step)
 
 
+## Verilen katı doğrudan gösterir (geliştirici sahnesi ve testler için; geçiş animasyonu yok).
+func select_floor(index: int) -> void:
+	_show_floor(clampi(index, 0, session.catalog.floors.size() - 1))
+
+
 ## Günün karanlık oranı (Main her yarım saniyede verir): çiftlik görünümüne hafif ton.
 func set_time_of_day(phase: float) -> void:
 	if _view != null:
