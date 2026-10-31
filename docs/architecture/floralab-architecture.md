@@ -406,10 +406,10 @@ Sonuç `OfflineReport` (hasat sayısı/birimi/değeri, bekleyen olgun, aşırı 
   `bash tools/capture_screenshot.sh <sahne.tscn> <çıkış.png> [--frames=N] -- <seçenekler>` (`CAPTURE_SIZE=1080x2400` ile uzun ekran),
   arayüz setinin tamamı (iki dil, üç boyut/ölçek, renk körlüğü, hareketi azalt) için `bash tools/capture_ui_evidence.sh`.
 - Ayrıştırma denetimi: şablonun `godot-parse-check.gd` betiği (`src/` ve `tests/` altındaki tüm betikler temiz).
-- Android: `godot --headless --export-release "Android Release" build/floralab-1.1.0.apk` (imza bilgisi `GODOT_ANDROID_KEYSTORE_RELEASE_*` ortam
-  değişkenlerinden; anahtar deposu depoda YOK). Denetim: `apksigner verify` (v2+v3 geçerli), `aapt2 dump badging` (paket `com.tigirer.floralab`, sürüm 1.1.0/2,
+- Android: `godot --headless --export-release "Android Release" build/floralab-1.2.0.apk` (imza bilgisi `GODOT_ANDROID_KEYSTORE_RELEASE_*` ortam
+  değişkenlerinden; anahtar deposu depoda YOK). Denetim: `apksigner verify` (v2+v3 geçerli), `aapt2 dump badging` (paket `com.tigirer.floralab`, sürüm 1.2.0/3,
   minSdk 24, arm64-v8a, izin yok, `debuggable` değil), paket içeriği (testler/geliştirici sahneleri yok, betikler derlenmiş, çeviri var) ve aynı ön ayardan `--export-pack`
-  ile üretilen `.pck`'nın başsız açılıp 35 oyun saniyesi çalışması (şifreli otomatik kayıt yazıldı, hata yok). **Gerçek bir Android cihazda/emülatörde çalıştırma yapılmadı.**
+  ile üretilen `.pck`'nın başsız açılıp 35 oyun saniyesi çalışması (şifreli otomatik kayıt yazıldı, hata yok). 1.2.0'da ayrıca aynı `.pck` yazılım OpenGL'li Xvfb'de gerçek çizimle açıldı (200 kare, açılış kartı üstünde 2.5D çiftlik, sistem dili İngilizce olarak seçildi): dışa aktarılmış gölgelendirici ve kaynaklar yükleniyor. **Gerçek bir Android cihazda/emülatörde çalıştırma yapılmadı.**
 
 ## 14. Kararlar ve sapmalar
 
