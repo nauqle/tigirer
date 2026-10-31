@@ -57,9 +57,11 @@ func test_every_pot_base_fits_inside_the_view_for_each_floor_size_and_aspect() -
 
 
 func test_the_tile_size_on_screen_is_capped_so_a_small_floor_does_not_balloon() -> void:
-	var stage: FarmStage = _stage(3, 2, Vector2(1030.0, 3000.0))
+	# Küçük kat, çok geniş ve yüksek pencere: sığdırma tek başına karoyu ~380 piksel yapardı; sınır 225'te tutar.
+	var stage: FarmStage = _stage(3, 1, Vector2(2000.0, 2000.0))
 
-	assert_true(stage.pixels_per_tile() <= FarmStage.MAX_PIXELS_PER_TILE + 0.5, "çok uzun pencerede de karo sınırı aşılmaz (%f)" % stage.pixels_per_tile())
+	assert_true(stage.pixels_per_tile() <= 228.0, "karo sınırı aşılmaz (%f)" % stage.pixels_per_tile())
+	assert_true(stage.pixels_per_tile() > 200.0, "ama sınıra kadar büyür (%f)" % stage.pixels_per_tile())
 
 
 func test_a_taller_floor_makes_each_tile_smaller_in_the_same_view() -> void:
@@ -126,3 +128,28 @@ func test_the_first_row_sits_above_the_second_on_screen_and_columns_run_left_to_
 
 	assert_true(top_right.x > top_left.x + 100.0, "sütunlar soldan sağa")
 	assert_true(bottom_left.y > top_left.y + 100.0, "ikinci satır ilkinin altında")
+
+
+func test_dollying_the_camera_slides_the_floor_sideways_by_about_a_tile_per_tile() -> void:
+	var stage: FarmStage = _stage(3, 2, Vector2(1030.0, 1000.0))
+	stage.reduce_motion = true
+	var before: float = stage.project(stage.pot_base_world(0)).x
+
+	stage.set_dolly(1.0)
+	var moved: float = before - stage.project(stage.pot_base_world(0)).x
+
+	assert_almost_eq(moved, stage.pixels_per_tile(), 4.0, "kamera bir karo sağa: saksı bir karo (piksel) sola kayar")
+	assert_almost_eq(stage.dolly(), 1.0, 0.0001)
+
+
+func test_switching_reduce_motion_on_snaps_a_drifted_camera_back_to_rest() -> void:
+	var calm: FarmStage = _stage(3, 2, Vector2(1030.0, 1000.0))
+	calm.reduce_motion = true
+	var rest: Vector2 = calm.project(calm.pot_base_world(0))
+	var stage: FarmStage = _stage(3, 2, Vector2(1030.0, 1000.0))
+	stage.advance(2.5)
+	assert_true(stage.project(stage.pot_base_world(0)).distance_to(rest) > 0.5, "önce süzülmüş")
+
+	stage.reduce_motion = true
+
+	assert_almost_eq(stage.project(stage.pot_base_world(0)).distance_to(rest), 0.0, 0.01, "hareketi azalt açılınca kamera durağan konuma döner")

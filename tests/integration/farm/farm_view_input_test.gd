@@ -241,21 +241,41 @@ func test_the_pot_tap_area_stops_at_the_column_edges() -> void:
 
 
 func test_a_swipe_hits_a_plant_only_within_its_height_band() -> void:
+	# Sabitlere değil eski 2D tasarımın sayılarına bağlı: üstünde 1.17 ve altında 0.39 karo (210 ve 70 piksel / 180).
 	_plant_mature(1)
-	var base: Vector2 = Vector2(1.5, _view.stage().pot_base_world(1).y)
+	var base_y: float = _view.stage().pot_base_world(1).y
 	var cases: Array[Dictionary] = [
-		{"offset": FarmView.HIT_ABOVE - 0.08, "hit": true},
-		{"offset": FarmView.HIT_ABOVE + 0.12, "hit": false},
-		{"offset": -FarmView.HIT_BELOW + 0.06, "hit": true},
-		{"offset": -FarmView.HIT_BELOW - 0.12, "hit": false},
+		{"offset": 1.10, "hit": true},
+		{"offset": 1.25, "hit": false},
+		{"offset": -0.33, "hit": true},
+		{"offset": -0.46, "hit": false},
 	]
 	for entry: Dictionary in cases:
 		_requested.clear()
-		var y: float = base.y + float(entry["offset"])
+		var y: float = base_y + float(entry["offset"])
 		_press(_at_plane(0.7, y))
 		_move(_at_plane(2.3, y))
 		_release(_at_plane(2.3, y))
 		assert_eq(_requested.size() == 1, bool(entry["hit"]), "yükseklik %s" % str(entry["offset"]))
+
+
+func test_a_swipe_hits_a_plant_only_within_its_width_band() -> void:
+	# Bitki tabanının iki yanında 0.345 karo (62 piksel / 180): dikey kaydırma yalnızca o şeritte değer.
+	_plant_mature(1)
+	var base_y: float = _view.stage().pot_base_world(1).y
+	var cases: Array[Dictionary] = [
+		{"offset": 0.30, "hit": true},
+		{"offset": -0.30, "hit": true},
+		{"offset": 0.42, "hit": false},
+		{"offset": -0.42, "hit": false},
+	]
+	for entry: Dictionary in cases:
+		_requested.clear()
+		var x: float = 1.5 + float(entry["offset"])
+		_press(_at_plane(x, base_y - 0.2))
+		_move(_at_plane(x, base_y + 0.9))
+		_release(_at_plane(x, base_y + 0.9))
+		assert_eq(_requested.size() == 1, bool(entry["hit"]), "yatay uzaklık %s" % str(entry["offset"]))
 
 
 func test_a_swipe_misses_a_plant_that_is_a_column_away() -> void:
